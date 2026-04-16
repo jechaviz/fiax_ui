@@ -108,22 +108,25 @@
 
     // ── Bootstrap ─────────────────────────────────────────────────
     async function init() {
-      // Configure UnoCSS BEFORE loading the runtime script
-      window.__unocss = {
-        presets: [
-          () => window.unocss.presetWind(),
-          () => window.unocss.presetAttributify(),
-        ],
-        theme: {
-          colors: {
-            brand: { active: '#3b82f6', surface: '#0a1224' }
+      // Configure Tailwind CDN BEFORE loading it
+      window.tailwind = {
+        config: {
+          darkMode: ['class', '[data-theme="dark"]'],
+          corePlugins: {
+            preflight: false,
+          },
+          theme: {
+            extend: {
+              colors: {
+                brand: { active: '#3b82f6', surface: '#0a1224' }
+              }
+            }
           }
-        },
-        config: { dark: 'class', darkSelector: '[data-theme="dark"]' }
+        }
       };
       
-      // Load UnoCSS for Tailwind utility classes used in inner components
-      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime");
+      // Load Tailwind CSS instead of UnoCSS for robust runtime utility classes
+      await loadScript("https://cdn.tailwindcss.com");
 
       // Load data & logic scripts in correct dependency order
       await loadScript("/js/fiax_demo_data.js");

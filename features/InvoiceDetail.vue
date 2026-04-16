@@ -30,15 +30,15 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button @click="printInvoice" class="app-button-secondary py-2 px-4 flex items-center gap-2">
+        <button @click="printInvoice" class="app-btn-ghost py-2 px-4 flex items-center gap-2">
           <i class="fa-solid fa-print"></i> Imprimir / PDF
         </button>
-        <button @click="handleClone" class="app-button-ghost py-2 px-4 flex items-center gap-2 border border-white/5">
+        <button @click="handleClone" class="app-btn-ghost py-2 px-4 flex items-center gap-2 border border-white/5">
           <i class="fa-regular fa-copy"></i> Clonar
         </button>
         
         <template v-if="invoice.status === 'Vigente'">
-          <router-link :to="`/cfdi/ingresos/${invoice.id}/edit`" class="app-button-primary py-2 px-6 flex items-center gap-2">
+          <router-link :to="`/cfdi/ingresos/${invoice.id}/edit`" class="app-btn-blue-pro py-2 px-6 flex items-center gap-2">
             <i class="fa-solid fa-pencil"></i> Editar
           </router-link>
           <button @click="handleSend" class="px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all font-bold text-sm flex items-center gap-2">
