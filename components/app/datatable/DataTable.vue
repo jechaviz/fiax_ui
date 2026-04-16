@@ -71,7 +71,7 @@
                   @resize-column="handleColumnResize"
                   @update-filter="handleHeaderFilter"
                 />
-                <th class="is-actions">{{ i18n.tableAction || 'Action' }}</th>
+                <th class="is-actions">{{ i18n.tableAction || 'Acciones' }}</th>
               </tr>
 
               <tr v-if="showColumnFilters" class="app-table-filter-row">
@@ -80,11 +80,11 @@
                     v-if="column.filterable && column.key !== 'status'"
                     v-model="columnFilters[column.key]"
                     class="app-column-filter-input"
-                    :placeholder="`Filter ${column.label}`"
+                    :placeholder="`Filtrar ${column.label}`"
                     @input="setPage(1)"
                   />
                   <select v-else-if="column.key === 'status'" v-model="columnFilters[column.key]" class="app-column-filter-input" @change="setPage(1)">
-                    <option value="">All</option>
+                    <option value="">Todos</option>
                     <option v-for="status in statusOptions" :key="status" :value="status">{{ statusLabel(status) }}</option>
                   </select>
                   <span v-else class="app-table-filter-empty">-</span>
@@ -117,15 +117,15 @@
                     <div v-else-if="column.key === 'collaborators'" class="app-inline-chip-list"><span v-for="user in (row.collaborators || [])" :key="user" class="app-mini-chip is-user">{{ user }}</span></div>
                     <div v-else-if="column.key === 'rating'" class="app-rating-readonly"><i v-for="star in 5" :key="star" class="fa-solid fa-star" :class="{ active: Number(row.rating || 0) >= star }"></i></div>
                     <div v-else-if="column.key === 'urgency'" class="app-urgency-readonly"><span>{{ row.urgency || 0 }}%</span><div class="app-urgency-track"><i :style="{ width: `${row.urgency || 0}%` }"></i></div></div>
-                    <a v-else-if="column.key === 'id' || column.key === 'folio'" href="#" class="text-blue-400 hover:text-blue-300 font-medium underline-offset-4 hover:underline transition-colors" @click.prevent="emitRowAction('open-record', row)">{{ displayCellValue(row, column) }}</a>
+                    <a v-else-if="column.key === 'id' || column.key === 'folio'" href="#" class="app-cell-link" @click.prevent="emitRowAction('open-record', row)">{{ displayCellValue(row, column) }}</a>
                     <span v-else>{{ displayCellValue(row, column) }}</span>
                   </template>
                 </td>
 
                 <td class="is-actions">
-                  <button type="button" class="app-row-action" title="Open" @click="emitRowAction('open-record', row)"><i class="fa-solid fa-eye"></i></button>
-                  <button type="button" class="app-row-action" title="Edit" @click="startRowInlineEdit(row)"><i class="fa-solid fa-pen"></i></button>
-                  <button type="button" class="app-row-action" title="Open Native" @click="emitRowAction('open-native', row)"><i class="fa-solid fa-paper-plane"></i></button>
+                  <button type="button" class="app-row-action" title="Ver" @click="emitRowAction('open-record', row)"><i class="fa-solid fa-eye"></i></button>
+                  <button type="button" class="app-row-action" title="Editar" @click="startRowInlineEdit(row)"><i class="fa-solid fa-pen"></i></button>
+                  <button type="button" class="app-row-action" title="Timbrar / Enviar" @click="emitRowAction('open-native', row)"><i class="fa-solid fa-paper-plane"></i></button>
                 </td>
               </tr>
             </tbody>
@@ -152,7 +152,7 @@
 
       <div v-else class="app-empty-state">
         <i class="fa-solid fa-circle-info"></i>
-        <p>{{ i18n.emptyStateTitle || 'No records match current filters.' }}</p>
+        <p>{{ i18n.emptyStateTitle || 'No hay registros que coincidan con los filtros actuales.' }}</p>
       </div>
     </div>
 
@@ -192,9 +192,35 @@ import Spinner from 'app/primitives/Spinner.vue';
 const SCHEMA = window.fiax?.datatable?.schema || {};
 const FILTERS = window.fiax?.datatable?.filters || {};
 const VIEWS = window.fiax?.datatable?.views || {};
-const { STATUS_VALUES = ['paid', 'overdue', 'pending', 'draft'], createColumnSchema = () => [], createGroup = () => ({ logic: 'AND', filters: [] }), normalizeDate = (value) => value, normalizeFilterGroup = (group) => group, resolveCellValue = (row, column) => row?.[column?.key], toText = (value) => String(value ?? '') } = SCHEMA;
-const { buildGroupBuckets = () => [], createColumnMap = () => ({}), escapeCsvCell = (value) => `\"${String(value ?? '')}\"`, filterRows = ({ rows }) => rows, formatMoney = (value) => String(value ?? ''), paginateRows = (rows) => ({ pageCount: 1, safePage: 1, pageRows: rows, startIndex: rows.length ? 1 : 0, endIndex: rows.length }), sortRows = (rows) => rows, statusLabel = (value) => String(value ?? '') } = FILTERS;
+const { STATUS_VALUES = ['Vigente', 'Cancelado', 'Pendiente', 'Borrador'], createColumnSchema = () => [], createGroup = () => ({ logic: 'AND', filters: [] }), normalizeDate = (value) => value, normalizeFilterGroup = (group) => group, resolveCellValue = (row, column) => row?.[column?.key], toText = (value) => String(value ?? '') } = SCHEMA;
+const { buildGroupBuckets = () => [], createColumnMap = () => ({}), escapeCsvCell = (value) => `"${String(value ?? '')}"`, filterRows = ({ rows }) => rows, formatMoney = (value) => String(value ?? ''), paginateRows = (rows) => ({ pageCount: 1, safePage: 1, pageRows: rows, startIndex: rows.length ? 1 : 0, endIndex: rows.length }), sortRows = (rows) => rows, statusLabel = (value) => String(value ?? '') } = FILTERS;
 const { createView = (name, config) => ({ id: name, name, config }), loadJson = (_key, fallback) => fallback, normalizeViews = (list) => list || [], saveJson = () => {}, storageKey = (name) => name } = VIEWS;
+
+// Maps for display labels
+const TIPO_COMPROBANTE_LABELS = { I: 'Ingreso', E: 'Egreso', T: 'Traslado', P: 'Pago', N: 'Nómina' };
+
+// Status→CSS-class map (normalized)
+const STATUS_CLASS_MAP = {
+  vigente:   'app-status--vigente',
+  cancelado: 'app-status--cancelado',
+  pendiente: 'app-status--pendiente',
+  borrador:  'app-status--borrador',
+  // English legacy aliases
+  paid:      'app-status--vigente',
+  overdue:   'app-status--pendiente',
+  pending:   'app-status--pendiente',
+  draft:     'app-status--borrador',
+};
+
+function formatDateDisplay(value) {
+  if (!value) return '—';
+  // Accept ISO string YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ
+  const raw = String(value).slice(0, 10);
+  const [year, month, day] = raw.split('-').map(Number);
+  if (!year || !month || !day) return value;
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 export default {
   name: 'DataTable',
@@ -271,7 +297,7 @@ export default {
       return walk(this.filterGroup);
     },
     filteredRows() {
-      const searchKeys = ['id', 'folio', 'clientName', 'clientRfc', 'companyName', 'description', 'category', 'tipoDeComprobante', 'status', 'date'];
+      const searchKeys = ['id', 'folio', 'clientName', 'clientRfc', 'companyName', 'description', 'category', 'tipoDeComprobante', 'status', 'date', 'employeeName'];
       return filterRows({
         rows: this.localRows,
         query: this.internalFilter,
@@ -307,7 +333,7 @@ export default {
       return this.paginationModel.pageRows;
     },
     footerLabel() {
-      return `Showing ${this.paginationModel.startIndex} to ${this.paginationModel.endIndex} of ${this.sortedRows.length} entries`;
+      return `Mostrando ${this.paginationModel.startIndex} a ${this.paginationModel.endIndex} de ${this.sortedRows.length} registros`;
     },
     pageButtons() {
       const total = this.pageCount;
@@ -322,7 +348,7 @@ export default {
       return buildGroupBuckets(this.sortedRows, key, this.columnMap, this.i18n);
     },
     loadingLabel() {
-      return this.i18n.tableLoadingLabel || 'Loading records...';
+      return this.i18n.tableLoadingLabel || 'Cargando registros...';
     },
   },
   watch: {
@@ -375,7 +401,7 @@ export default {
     },
     storageKeys() {
       return {
-        views: storageKey('datatable.views'),
+        views: storageKey(`datatable.views.${this.surfaceKey}`),
       };
     },
     defaultViewConfig() {
@@ -388,7 +414,7 @@ export default {
       };
     },
     restoreViews() {
-      const defaults = [{ id: 'default', name: this.i18n.defaultViewName || 'Default view', isDefault: true, config: this.defaultViewConfig() }];
+      const defaults = [{ id: 'default', name: this.i18n.defaultViewName || 'Vista predeterminada', isDefault: true, config: this.defaultViewConfig() }];
       const persisted = normalizeViews(loadJson(this.storageKeys().views, defaults));
       this.views = persisted.length ? persisted : defaults;
       this.applyNamedView(this.views[0].id, false);
@@ -491,23 +517,33 @@ export default {
     },
     displayCellValue(row, column) {
       const value = this.resolveCellValue(row, column);
-      if (column.key === 'total') return this.formatMoney(value);
+      // Numeric money columns
+      if (column.key === 'total' || column.key === 'amount' || column.key === 'rate') return this.formatMoney(value);
+      // Array values
       if (Array.isArray(value)) return value.join(', ');
-      return value == null || value === '' ? '-' : value;
+      // Date columns — format to human-readable
+      if (column.key === 'date' || column.key === 'issuedDateIso' || column.key === 'dueDateIso' || column.key === 'paymentDate') {
+        return formatDateDisplay(value);
+      }
+      // tipoDeComprobante — show label instead of raw code
+      if (column.key === 'tipoDeComprobante') {
+        return TIPO_COMPROBANTE_LABELS[value] || value || '—';
+      }
+      return value == null || value === '' ? '—' : value;
     },
     statusLabel(type) {
       return statusLabel(type, this.i18n);
     },
     statusClass(statusText) {
-      const s = toText(statusText || 'Borrador').toLowerCase();
-      return `app-status-${s}`;
+      const key = toText(statusText || 'Borrador').toLowerCase().trim();
+      return STATUS_CLASS_MAP[key] || `app-status--borrador`;
     },
     formatMoney(value) {
       return formatMoney(value);
     },
     editorOptions(column) {
       if (column.key === 'owner' || column.key === 'collaborators') {
-        return ['Operations', 'Finance', 'Sales', 'Pricing', 'Collections', 'Field Ops'].map((value) => ({ value, label: value }));
+        return ['Operaciones', 'Finanzas', 'Ventas', 'Precios', 'Cobranza', 'Campo'].map((value) => ({ value, label: value }));
       }
       return column.options || [];
     },
@@ -532,15 +568,13 @@ export default {
       const previous = JSON.parse(JSON.stringify(target));
       let persistedValue;
       if (column.key === 'status') {
-        target.type = STATUS_VALUES.includes(toText(nextValue).toLowerCase()) ? toText(nextValue).toLowerCase() : 'draft';
-        target.statusText = this.statusLabel(target.type);
-        persistedValue = target.type;
-      } else if (column.key === 'total') {
+        target.status = nextValue;
+        persistedValue = target.status;
+      } else if (column.key === 'total' || column.key === 'amount' || column.key === 'rate') {
         const amount = Number(toText(nextValue).replace(/[^\d.-]/g, ''));
-        target.total = Number.isNaN(amount) ? 0 : amount;
-        target.amount = this.formatMoney(target.total);
-        persistedValue = target.total;
-      } else if (column.key === 'issuedDateIso' || column.key === 'dueDateIso') {
+        target[column.key] = Number.isNaN(amount) ? 0 : amount;
+        persistedValue = target[column.key];
+      } else if (column.key === 'issuedDateIso' || column.key === 'dueDateIso' || column.key === 'date') {
         target[column.key] = normalizeDate(nextValue);
         persistedValue = target[column.key];
       } else {
@@ -596,7 +630,7 @@ export default {
         rowId: row?.id,
         recordId: row?.recordId,
         model: row?.recordModel,
-        row: row, // Include full row for flexible handling
+        row: row,
       });
     },
     applyTableSettings(payload) {
@@ -611,7 +645,7 @@ export default {
       this.setPage(1);
     },
     setPage(page) {
-      const next = Math.min(Math.max(page, 1), this.pageCount);
+      const next = Math.min(Math.max(page, 1), Math.max(this.pageCount, 1));
       this.$emit('update-page', next);
     },
     onPageSizeChange(ev) {
@@ -623,12 +657,7 @@ export default {
       const target = this.localRows.find((row) => row.id === rowId);
       if (!target) return;
       const groupKey = this.groupByKey || 'status';
-      if (groupKey === 'status') {
-        target.type = bucketKey.toLowerCase();
-        target.statusText = this.statusLabel(target.type);
-      } else {
-        target[groupKey] = bucketKey;
-      }
+      target[groupKey] = bucketKey;
       this.markDirty();
     },
     emitRefresh() {
@@ -645,7 +674,7 @@ export default {
       const href = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = href;
-      link.download = 'app-ui-records.csv';
+      link.download = `fiax-${this.surfaceKey}-${new Date().toISOString().slice(0, 10)}.csv`;
       link.click();
       URL.revokeObjectURL(href);
     },
@@ -665,10 +694,9 @@ export default {
           const values = line.split(',').map((cell) => cell.replace(/^"|"$/g, '').replaceAll('""', '"').trim());
           const row = {
             id: `import-${Date.now()}-${index}`,
-            series: 'I',
+            serie: 'I',
             folio: String(index + 1).padStart(6, '0'),
-            type: 'draft',
-            stage: 'Backlog',
+            status: 'Borrador',
             total: 0,
             tags: [],
             collaborators: [],
@@ -680,11 +708,8 @@ export default {
             if (!column) return;
             row[column.key] = values[cellIndex] || '';
           });
-          row.issuedDateIso = normalizeDate(row.issuedDateIso || new Date().toISOString().slice(0, 10));
-          row.dueDateIso = normalizeDate(row.dueDateIso || new Date().toISOString().slice(0, 10));
+          row.date = normalizeDate(row.date || new Date().toISOString().slice(0, 10));
           row.total = Number(toText(row.total).replace(/[^\d.-]/g, '')) || 0;
-          row.amount = this.formatMoney(row.total);
-          row.statusText = this.statusLabel(row.type);
           return row;
         });
       };

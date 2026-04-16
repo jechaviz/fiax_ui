@@ -18,16 +18,26 @@
 
   function statusLabel(type, i18n = {}) {
     const normalized = toText(type).toLowerCase();
-    if (normalized === 'paid') return i18n.filterPaid || 'Paid';
-    if (normalized === 'overdue') return i18n.filterOverdue || 'Overdue';
-    if (normalized === 'pending') return i18n.filterPending || 'Pending';
-    return i18n.filterDraft || 'Draft';
+    // Spanish primary values (CFDI 4.0)
+    if (normalized === 'vigente')   return i18n.filterVigente   || 'Vigente';
+    if (normalized === 'cancelado') return i18n.filterCancelado || 'Cancelado';
+    if (normalized === 'pendiente') return i18n.filterPendiente || 'Pendiente';
+    if (normalized === 'borrador')  return i18n.filterBorrador  || 'Borrador';
+    // English fallback values
+    if (normalized === 'paid')      return i18n.filterPaid      || 'Vigente';
+    if (normalized === 'overdue')   return i18n.filterOverdue   || 'Pendiente';
+    if (normalized === 'pending')   return i18n.filterPending   || 'Pendiente';
+    return i18n.filterDraft || 'Borrador';
   }
 
-  function formatMoney(value, locale = 'en-US', currency = 'USD') {
+  function formatMoney(value, locale = 'es-MX', currency = 'MXN') {
     const amount = Number(value || 0);
-    const formatter = new Intl.NumberFormat(locale, { style: 'currency', currency });
-    return Number.isNaN(amount) ? formatter.format(0) : formatter.format(amount);
+    try {
+      const formatter = new Intl.NumberFormat(locale, { style: 'currency', currency });
+      return Number.isNaN(amount) ? formatter.format(0) : formatter.format(amount);
+    } catch (_) {
+      return `$${Number.isNaN(amount) ? '0.00' : amount.toFixed(2)}`;
+    }
   }
 
   function evaluateRule(row, rule, columnMap) {
