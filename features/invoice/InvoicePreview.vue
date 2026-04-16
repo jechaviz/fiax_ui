@@ -196,12 +196,12 @@
         <div class="bg-slate-50 dark:bg-slate-700/20 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 space-y-4 shadow-sm">
           <div class="flex justify-between text-sm">
             <span class="text-slate-500 dark:text-slate-400 font-medium">Subtotal</span>
-            <span class="font-bold text-slate-800 dark:text-slate-200">{{ formatCurrency(invoice.subtotal) }}</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200">{{ formatCurrency(computedSubtotal) }}</span>
           </div>
           
-          <div v-if="invoice.discount > 0" class="flex justify-between text-sm text-red-600 dark:text-red-400">
-            <span class="font-medium">Descuento Global</span>
-            <span class="font-bold">-{{ formatCurrency(invoice.discount) }}</span>
+          <div v-if="computedDiscount > 0" class="flex justify-between text-sm text-red-600 dark:text-red-400">
+            <span class="font-medium">Descuento</span>
+            <span class="font-bold">-{{ formatCurrency(computedDiscount) }}</span>
           </div>
 
           <div v-for="(group, gIdx) in taxGroups" :key="gIdx" class="flex justify-between text-[11px] font-mono uppercase tracking-tight">
@@ -214,8 +214,8 @@
           </div>
 
           <div class="pt-6 border-t border-slate-200 dark:border-slate-600 flex justify-between items-end text-primary-600 dark:text-primary-400">
-            <span class="font-black text-xs uppercase tracking-widest pb-1">Total MXN</span>
-            <span class="text-4xl font-black tracking-tighter leading-none">{{ formatCurrency(invoice.total) }}</span>
+            <span class="font-black text-xs uppercase tracking-widest pb-1">Total {{ invoice.currency || 'MXN' }}</span>
+            <span class="text-4xl font-black tracking-tighter leading-none">{{ formatCurrency(computedTotal) }}</span>
           </div>
         </div>
       </div>
@@ -269,6 +269,15 @@ export default {
       return item.informacionAduanera?.length || item.cuentaPredial;
     };
 
+    const computedSubtotal = Vue.computed(() => {
+      return (props.invoice.lineItems || []).reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+    });
+
+    const computedDiscount = Vue.computed(() => {
+      const itemDiscounts = (props.invoice.lineItems || []).reduce((acc, item) => acc + Number(item.discount || 0), 0);
+      return itemDiscounts + Number(props.invoice.discount || 0);
+    });
+
     const taxGroups = Vue.computed(() => {
       const summary = {};
       (props.invoice.lineItems || []).forEach(item => {
@@ -288,7 +297,14 @@ export default {
       return Object.values(summary);
     });
 
-    return { formatCurrency, formatDate, resolveLabel, resolveUnit, hasAdvancedInfo, taxGroups };
+    const computedTotal = Vue.computed(() => {
+      const taxes = taxGroups.value.reduce((acc, group) => {
+        return acc + (group.isRetention ? -group.amount : group.amount);
+      }, 0);
+      return computedSubtotal.value - computedDiscount.value + taxes;
+    });
+
+    return { formatCurrency, formatDate, resolveLabel, resolveUnit, hasAdvancedInfo, taxGroups, computedSubtotal, computedDiscount, computedTotal };
   }
 }
 </script>

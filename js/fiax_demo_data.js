@@ -68,7 +68,7 @@
                 lineItems: [
                     { id: 'item-1-1', noIdentificacion: 'WEB-DEV-01', productCode: '84111500', unitCode: 'E48', quantity: 20, description: 'Desarrollo de componente Calendario en React', unitPrice: 75, discount: 0, amount: 1500, objetoImp: '02', taxes: [{ taxType: 'IVA', rate: 0.16, isRetention: false, amount: 240, base: 1500 }] },
                     { id: 'item-1-2', noIdentificacion: 'LIB-CAL-001', productCode: '43231500', unitCode: 'H87', quantity: 1, description: 'Librería de Calendario Core', unitPrice: 500, discount: 0, amount: 500, objetoImp: '02', taxes: [{ taxType: 'IVA', rate: 0.16, isRetention: false, amount: 80, base: 500 }] },
-                    { id: 'item-1-3', noIdentificacion: 'LIB-AUTH-003', productCode: '43231502', unitCode: 'H87', quantity: 1, description: 'Módulo de Autenticación Avanzada', unitPrice: 200, discount: 20, amount: 180, objetoImp: '02', taxes: [{ taxType: 'IVA', rate: 0.16, isRetention: false, amount: 28.8, base: 180 }] }
+                    { id: 'item-1-3', noIdentificacion: 'LIB-AUTH-003', productCode: '43231502', unitCode: 'H87', quantity: 1, description: 'Módulo de Autenticación Avanzada', unitPrice: 200, discount: 20, amount: 200, objetoImp: '02', taxes: [{ taxType: 'IVA', rate: 0.16, isRetention: false, amount: 28.8, base: 180 }] }
                 ],
                 subtotal: 2180, discount: 20, taxTotal: 348.8, retainedTotal: 0, total: 2508.8,
                 satSeal: 'mock_sat_seal==', issuerSeal: 'mock_issuer_seal=='
@@ -164,7 +164,7 @@
                 expeditionPlace: '11560', paymentMethod: 'PUE', paymentType: '03',
                 currency: 'MXN', exchangeRate: 1,
                 lineItems: [
-                    { id: 'item-6-1', noIdentificacion: 'API-DEV-02', productCode: '81112101', unitCode: 'E48', quantity: 60, description: 'Desarrollo de Módulo de Reportes', unitPrice: 85, discount: 850, amount: 4250, objetoImp: '02', taxes: [{ taxType: 'IVA', rate: 0.16, isRetention: false, amount: 680, base: 4250 }] }
+                    { id: 'item-6-1', noIdentificacion: 'API-DEV-02', productCode: '81112101', unitCode: 'E48', quantity: 60, description: 'Desarrollo de Módulo de Reportes', unitPrice: 85, discount: 850, amount: 5100, objetoImp: '02', taxes: [{ taxType: 'IVA', rate: 0.16, isRetention: false, amount: 680, base: 4250 }] }
                 ],
                 subtotal: 5100, discount: 850, taxTotal: 680, retainedTotal: 0, total: 4930,
                 satSeal: '', issuerSeal: ''

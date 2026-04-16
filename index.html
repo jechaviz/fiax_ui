@@ -160,19 +160,38 @@
 
     // ── Bootstrap ─────────────────────────────────────────────────
     async function init() {
-      // Configure UnoCSS BEFORE loading the runtime script
-      window.__unocss = {
-        theme: {
-          colors: {
-            brand: { active: '#3b82f6', surface: '#0a1224' }
-          }
-        }
-      };
+      // 1. Load UnoCSS Presets separately
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime/preset-wind3.global.js");
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime/preset-attributify.global.js");
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime/preset-typography.global.js");
 
-      // Load UnoCSS for Tailwind utility classes used in inner components
-      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime");
+      // 2. Configure UnoCSS using the loaded presets
+      const runtime = window.__unocss_runtime;
+      if (runtime && runtime.presets) {
+        const wind = runtime.presets.presetWind3 || runtime.presets.presetWind;
+        const attributify = runtime.presets.presetAttributify;
+        const typography = runtime.presets.presetTypography;
 
-      // Load data & logic scripts in correct dependency order
+        const nextPresets = [];
+        if (typeof wind === 'function') nextPresets.push(wind());
+        if (typeof attributify === 'function') nextPresets.push(attributify());
+        if (typeof typography === 'function') nextPresets.push(typography());
+
+        window.__unocss = {
+          presets: nextPresets,
+          theme: {
+            colors: {
+              brand: { active: '#3b82f6', surface: '#0a1224' }
+            }
+          },
+          config: { dark: 'class', darkSelector: '.dark' }
+        };
+      }
+
+      // 3. Load UnoCSS Core Runtime last
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime/core.global.js");
+
+      // 4. Load data & logic scripts in correct dependency order
       await loadScript("/js/fiax_demo_data.js");
       await loadScript("/js/fiax_config.js");
       await loadScript("/js/fiax_constants.js");
