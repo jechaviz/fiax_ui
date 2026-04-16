@@ -1,0 +1,90 @@
+/* ============================================================
+   FIAX — Shell Cards & Collapsibles (Dual-Theme Support)
+   ============================================================ */
+
+.app-collapsible-card {
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-xl);
+    background: var(--app-bg-surface);
+    box-shadow: var(--app-shadow-md);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+[data-theme="light"] .app-collapsible-card {
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.app-collapsible-card__header {
+    width: 100%;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    cursor: pointer;
+}
+
+.app-collapsible-card__title-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--app-text-primary);
+}
+
+.app-collapsible-card__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.app-data-card {
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-lg);
+    background: var(--app-bg-surface);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: var(--app-shadow-sm);
+    transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+[data-theme="light"] .app-data-card {
+    background: #fff;
+}
+
+.app-data-card.is-interactive:hover {
+    transform: translateY(-4px);
+    border-color: var(--app-primary);
+    box-shadow: var(--app-shadow-lg);
+}
+
+.app-data-card__title {
+    margin: 0;
+    color: var(--app-text-primary);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.app-data-card__row-value,
+.app-data-card__footer-value {
+    color: var(--app-text-primary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.app-data-card__icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--app-primary-glow);
+    color: var(--app-primary);
+    font-size: 16px;
+}

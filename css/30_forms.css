@@ -1,0 +1,87 @@
+/* ============================================================
+   FIAX — Form View & Document Cards (Dual-Theme Support)
+   ============================================================ */
+
+/* The Main Form Card - Floating Document Look */
+.o_form_view .o_form_sheet {
+    background: var(--app-bg-surface) !important;
+    backdrop-filter: var(--app-blur-heavy) !important;
+    border: 1px solid var(--app-border) !important;
+    border-radius: var(--app-radius-xl) !important;
+    box-shadow: var(--app-shadow-lg) !important;
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+    padding: 48px !important;
+    color: var(--app-text-primary) !important;
+}
+
+[data-theme="light"] .o_form_view .o_form_sheet {
+    background: #fff !important;
+    box-shadow: 0 40px 80px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Header & Status Ribbon */
+.o_form_statusbar {
+    background: var(--app-bg-hover) !important;
+    border-bottom: 1px solid var(--app-border) !important;
+    padding: 12px 24px !important;
+    border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0 !important;
+}
+
+/* Fields & Inputs - Theme Precision */
+.o_field_widget input,
+.o_field_widget select,
+.o_field_widget textarea,
+.fiax-input {
+    background: var(--app-bg-hover) !important;
+    border: 1px solid var(--app-border) !important;
+    border-radius: 8px !important;
+    color: var(--app-text-primary) !important;
+    padding: 10px 14px !important;
+    transition: all 0.2s ease !important;
+    outline: none !important;
+}
+
+[data-theme="light"] .o_field_widget input,
+[data-theme="light"] .o_field_widget select {
+    background: #fff !important;
+}
+
+.o_field_widget input:focus,
+.o_field_widget select:focus {
+    border-color: var(--app-primary) !important;
+    box-shadow: 0 0 0 3px var(--app-primary-glow) !important;
+}
+
+/* Labels - Technical & Muted */
+.o_td_label label,
+.fiax-label-technical {
+    color: var(--app-text-muted) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Notebook / Tabs - Seamless Glass */
+.nav-tabs {
+    border-bottom: 1px solid var(--app-border) !important;
+    gap: 16px !important;
+}
+
+.nav-tabs .nav-link {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    color: var(--app-text-muted) !important;
+    padding: 12px 0 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--app-primary) !important;
+    border-bottom-color: var(--app-primary) !important;
+}

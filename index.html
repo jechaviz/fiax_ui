@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fiax - Facturación Inteligente</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: inherit;
+    }
+    #app { min-height: 100vh; }
+    
+    /* Splash screen */
+    .splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #070f20;
+      z-index: 10000;
+      transition: opacity 0.5s ease;
+    }
+    .splash.hidden { opacity: 0; pointer-events: none; }
+    .splash-logo { font-size: 3rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+    .splash-loader { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #4361ee; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <!-- CDNs -->
+  <script src="https://cdn.jsdelivr.net/gh/exis9/squery@latest/squery.min.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+  <script src="https://unpkg.com/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+
+<body class="app-neural-active">
+  <div id="splash" class="splash">
+    <div class="splash-logo">FIAX</div>
+    <div class="splash-loader"></div>
+  </div>
+  <div id="app"></div>
+
+  <script type="module">
+    const { createApp, defineAsyncComponent, ref, onMounted } = Vue;
+    const { createRouter, createWebHashHistory } = VueRouter;
+
+    // Fiax Namespace
+    const FIAX = window.fiax || (window.fiax = {});
+    
+    // Global Error Catcher for Debugging
+    window.addEventListener('error', (e) => {
+      const errBox = document.createElement('div');
+      errBox.style = "position:fixed;bottom:20px;right:20px;z-index:99999;background:#ef4444;color:#fff;padding:15px;border-radius:10px;font-family:monospace;max-width:400px;word-wrap:break-word;";
+      errBox.innerHTML = `<b>Error:</b> ${e.message}<br><small>${e.filename}:${e.lineno}</small>`;
+      document.body.appendChild(errBox);
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      const errBox = document.createElement('div');
+      errBox.style = "position:fixed;bottom:20px;right:20px;z-index:99999;background:#f59e0b;color:#fff;padding:15px;border-radius:10px;font-family:monospace;max-width:400px;word-wrap:break-word;";
+      errBox.innerHTML = `<b>Promise Error:</b> ${e.reason?.message || e.reason}`;
+      document.body.appendChild(errBox);
+    });
+    
+    // Config and Base Path — use empty string so paths are absolute (/js/..., /css/...)
+    const base = '';
+
+    // CSS Parts to load
+    const cssParts = [
+      "css/00_core.css",
+      "css/20_shell_layout.css",
+      "css/21_sidebar.css",
+      "css/22_topbar_profile.css",
+      "css/23_breadcrumbs.css",
+      "css/24_pane_header.css",
+      "css/25_kpis.css",
+      "css/27_datatable_shell.css",
+      "css/28_overlays_popups.css",
+      "css/30_forms.css",
+      "css/31_shell_cards.css",
+      "css/34_command_palette.css",
+      "css/38_shell_dashboard.css",
+    ];
+
+    function injectStyles() {
+      cssParts.forEach((path) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `${base}/${path}`;
+        document.head.appendChild(link);
+      });
+    }
+
+    async function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.async = false;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    async function init() {
+      injectStyles();
+      
+      // Load Runtime and Data
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime");
+      await loadScript(`${base}/js/fiax_demo_data.js`);
+      await loadScript(`${base}/js/fiax_config.js`);
+      await loadScript(`${base}/js/fiax_constants.js`);
+      await loadScript(`${base}/js/fiax_i18n.js`);
+      await loadScript(`${base}/js/fiax_state.js`);
+      await loadScript(`${base}/js/fiax_datatable_schema.js`);
+      await loadScript(`${base}/js/fiax_datatable_filters.js`);
+      await loadScript(`${base}/js/fiax_datatable_views.js`);
+      await loadScript(`${base}/js/fiax_logic_cfdi.js`);
+      await loadScript(`${base}/js/fiax_ai.js`);
+
+      // Configure UnoCSS Runtime
+      window.__unocss_runtime = {
+        presets: [
+          () => window.unocss.presetWind(),
+          () => window.unocss.presetAttributify(),
+        ],
+        config: {
+          dark: 'class',
+          darkSelector: '[data-theme="dark"]'
+        },
+        theme: {
+          colors: {
+            brand: {
+              active: '#3b82f6',
+              surface: '#0d1a33',
+            }
+          }
+        }
+      };
+
+      const options = {
+        moduleCache: { vue: Vue },
+        async getFile(url) {
+          let finalUrl = url;
+          // app/ shorthand → /components/app/...
+          if (finalUrl.startsWith('app/')) {
+            finalUrl = '/components/' + finalUrl;
+          }
+          // Relative paths: ./Sidebar.vue → /Sidebar.vue (relative to server root)
+          if (finalUrl.startsWith('./')) {
+            finalUrl = finalUrl.slice(1);
+          }
+          // At this point finalUrl should be absolute (start with /)
+          const res = await fetch(finalUrl, { cache: 'no-store' });
+          if (!res.ok) throw new Error(`[Fiax] 404: ${url} (resolved: ${finalUrl})`);
+          return res.text();
+        },
+        addStyle(textContent) {
+          const style = document.createElement("style");
+          style.textContent = textContent;
+          document.head.appendChild(style);
+        },
+      };
+
+      const { loadModule } = window["vue3-sfc-loader"];
+      
+      // Expose for nested components
+      window.fiax.loadModule = loadModule;
+      window.fiax.loaderOptions = options;
+
+      // Pre-load and register global UI components
+      const UI = {
+        AppButton: defineAsyncComponent(() => loadModule(`${base}/components/ui/Button.vue`, options)),
+        DataTable: defineAsyncComponent(() => loadModule(`${base}/components/app/datatable/DataTable.vue`, options)),
+        AppInput: defineAsyncComponent(() => loadModule(`${base}/components/ui/Input.vue`, options)),
+        AppBadge: defineAsyncComponent(() => loadModule(`${base}/components/ui/Badge.vue`, options)),
+        AppCard: defineAsyncComponent(() => loadModule(`${base}/components/ui/Card.vue`, options)),
+      };
+
+      // Setup Router
+      const routes = [
+        { path: '/', alias: ['/index.html', '/dashboard'], component: () => loadModule(`${base}/features/Dashboard.vue`, options) },
+        
+        // Billing
+        { path: '/cfdi/ingresos', component: () => loadModule(`${base}/features/InvoicesList.vue`, options), props: { type: 'I' } },
+        { path: '/cfdi/egresos', component: () => loadModule(`${base}/features/InvoicesList.vue`, options), props: { type: 'E' } },
+        { path: '/cfdi/traslado', component: () => loadModule(`${base}/features/InvoicesList.vue`, options), props: { type: 'T' } },
+        { path: '/cfdi/pagos', component: () => loadModule(`${base}/features/PaymentsList.vue`, options) },
+        { path: '/cfdi/ingresos/new', component: () => loadModule(`${base}/features/InvoiceForm.vue`, options) },
+        { path: '/cfdi/ingresos/:id', component: () => loadModule(`${base}/features/InvoiceDetail.vue`, options), props: { type: 'I' } },
+        { path: '/cfdi/egresos/:id', component: () => loadModule(`${base}/features/InvoiceDetail.vue`, options), props: { type: 'E' } },
+        { path: '/cfdi/traslado/:id', component: () => loadModule(`${base}/features/InvoiceDetail.vue`, options), props: { type: 'T' } },
+        { path: '/cfdi/pagos/:id', component: () => loadModule(`${base}/features/PaymentDetail.vue`, options) },
+        { path: '/cfdi/nomina/:id', component: () => loadModule(`${base}/features/PayrollDetail.vue`, options) },
+        
+        // Catalogs
+        { path: '/clients', component: () => loadModule(`${base}/features/ClientsList.vue`, options) },
+        { path: '/products', component: () => loadModule(`${base}/features/ProductsList.vue`, options) },
+        { path: '/employees', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        
+        // Sales / CRM
+        { path: '/leads', component: () => loadModule(`${base}/features/LeadsList.vue`, options) },
+        { path: '/leads/:id', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        { path: '/estimates', component: () => loadModule(`${base}/features/EstimatesList.vue`, options) },
+        { path: '/estimates/:id', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        { path: '/contracts', component: () => loadModule(`${base}/features/ContractsList.vue`, options) },
+        { path: '/contracts/:id', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+
+        // Operations
+        { path: '/projects', component: () => loadModule(`${base}/features/ProjectsList.vue`, options) },
+        { path: '/projects/:id', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        
+        // Finances
+        { path: '/expenses', component: () => loadModule(`${base}/features/ExpensesList.vue`, options) },
+        { path: '/transactions', component: () => loadModule(`${base}/features/TransactionsList.vue`, options) },
+        { path: '/transactions/:id', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        { path: '/cfdi/nomina', component: () => loadModule(`${base}/features/PayrollList.vue`, options) },
+        
+        // Others
+        { path: '/jobs', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        { path: '/gigs', component: () => loadModule(`${base}/features/Placeholder.vue`, options) },
+        { path: '/admin/issuers', component: () => loadModule(`${base}/features/IssuersList.vue`, options) },
+      ];
+
+      const router = createRouter({
+        history: createWebHashHistory(),
+        routes,
+      });
+
+      // Simple Layout Component
+      const App = {
+        components: {
+          Shell: defineAsyncComponent(() => loadModule(`${base}/components/Shell.vue`, options)),
+        },
+        setup() {
+          const state = FIAX.state.ensureState();
+          onMounted(() => {
+            document.getElementById('splash').classList.add('hidden');
+          });
+          return { state };
+        },
+        template: `
+          <Shell :state="state">
+            <router-view v-slot="{ Component }">
+              <transition name="page-fade" mode="out-in">
+                <component :is="Component" :state="state" />
+              </transition>
+            </router-view>
+          </Shell>
+        `,
+      };
+
+      const app = createApp(App);
+      
+      // Register UI components globally
+      Object.entries(UI).forEach(([name, comp]) => app.component(name, comp));
+      
+      app.use(router);
+      // Expose router so CommandPalette can navigate programmatically
+      window.fiax._router = router;
+      app.mount("#app");
+    }
+
+    init().catch(err => {
+      console.error(err);
+      document.getElementById('splash').innerHTML = `<div style="color:red;padding:2rem;">Error: ${err.message}</div>`;
+    });
+  </script>
+</body>
+
+</html>

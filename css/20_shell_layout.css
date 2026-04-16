@@ -1,0 +1,60 @@
+/* ============================================================
+   FIAX — Shell & Layout (Dual-Theme Support)
+   ============================================================ */
+
+html, body, #app {
+  height: 100%;
+  min-height: 100vh;
+}
+
+/* ── Main layout shell ─────────────────────────────────── */
+.app-luxury-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--app-bg-app);
+  color: var(--app-text-primary);
+  transition: background-color 0.3s ease;
+}
+
+/* ── Content pane ──────────────────────────────────────── */
+.app-content-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 60% -10%, rgba(var(--app-primary-rgb), 0.05) 0%, transparent 70%);
+}
+
+[data-theme="light"] .app-content-pane {
+  background: radial-gradient(ellipse 80% 60% at 60% -10%, rgba(var(--app-primary-rgb), 0.03) 0%, transparent 70%);
+}
+
+/* ── Topbar ─────────────────────────────────────────────── */
+.app-topbar {
+  height: 60px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-bg-glass-heavy);
+  backdrop-filter: var(--app-blur);
+  -webkit-backdrop-filter: var(--app-blur);
+  flex-shrink: 0;
+  z-index: 40;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ── Main scrollable body ────────────────────────────────── */
+.app-pane-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 28px 32px 40px;
+}
+
+@media (max-width: 1024px) {
+  .app-pane-body { padding: 20px 20px 32px; }
+}

@@ -1,0 +1,147 @@
+/* ============================================================
+   FIAX — Shell Dashboard (Dual-Theme Support)
+   ============================================================ */
+
+.app-workspace-deck {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.app-shell-surface-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.app-dashboard-canvas {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.app-dashboard-section {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--app-bg-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xl);
+  box-shadow: var(--app-shadow-md);
+  transition: all 0.3s ease;
+}
+
+[data-theme="light"] .app-dashboard-section {
+    background: #fff;
+}
+
+.app-dashboard-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.app-dashboard-section__eyebrow,
+.app-dashboard-widget__eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--app-text-muted);
+}
+
+.app-dashboard-section__header h3,
+.app-dashboard-widget__header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--app-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.app-dashboard-section__header p,
+.app-dashboard-widget__description {
+  margin: 0.3rem 0 0;
+  color: var(--app-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.app-dashboard-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.app-dashboard-widget {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: var(--app-radius-lg);
+  border: 1px solid var(--app-border);
+  background: var(--app-bg-glass);
+  box-shadow: var(--app-shadow-sm);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="light"] .app-dashboard-widget {
+    background: #fff;
+}
+
+.app-dashboard-widget:hover {
+  transform: translateY(-4px);
+  border-color: var(--app-primary);
+  box-shadow: var(--app-shadow-lg);
+}
+
+.app-dashboard-widget.is-warning { border-bottom: 3px solid var(--app-warning); }
+.app-dashboard-widget.is-danger  { border-bottom: 3px solid var(--app-danger); }
+.app-dashboard-widget.is-primary { border-bottom: 3px solid var(--app-primary); }
+.app-dashboard-widget.is-success { border-bottom: 3px solid var(--app-success); }
+
+.app-dashboard-widget__header,
+.app-dashboard-widget__metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-dashboard-widget__metric {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--app-text-primary);
+  letter-spacing: -0.04em;
+}
+
+.app-dashboard-widget__delta {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--app-primary);
+}
+
+.app-dashboard-widget__badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--app-bg-hover);
+  color: var(--app-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.app-dashboard-widget__meta strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--app-text-primary);
+}
+
+@media (max-width: 1200px) {
+  .app-shell-surface-grid {
+    grid-template-columns: 1fr;
+  }
+}
