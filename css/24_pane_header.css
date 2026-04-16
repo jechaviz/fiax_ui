@@ -1,86 +1,138 @@
-/* 24. Pane header */
+/* ============================================================
+   FIAX — Pane Header & Button Variants
+   ============================================================ */
 
-/* 2.2 Pane Header */
+/* ── Pane header ─────────────────────────────────────────── */
 .app-pane-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
-}
-
-.app-pane-header-left {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.app-pane-header-right {
-    display: flex;
-    align-items: flex-start;
+    margin-bottom: 20px;
     gap: 16px;
 }
 
+.app-pane-header-left {
+    display: flex; align-items: center; gap: 20px;
+}
+
+.app-pane-header-right {
+    display: flex; align-items: center; gap: 12px;
+}
+
+/* ── Page title ──────────────────────────────────────────── */
 .app-title-pro {
-    font-size: 32px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.5px;
-    font-family: var(--app-font-display), var(--app-font-main), sans-serif !important;
+    font-size: 28px; font-weight: 900;
+    color: var(--app-text-primary);
+    letter-spacing: -0.04em;
+    font-family: var(--app-font-display), var(--app-font-main), sans-serif;
+    line-height: 1.1;
 }
 
-.app-btn-blue-pro {
-    background: var(--app-primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--app-radius);
-    padding: 12px 24px;
-    font-weight: 700;
-    font-size: 14px;
+.app-title-sub {
+    font-size: 13px;
+    color: var(--app-text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* ── Surface container (for IssuersList, etc.) ───────────── */
+.fiax-surface-container {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 0;
+}
+
+.fiax-surface-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px; gap: 16px;
+}
+
+.fiax-surface-title {
+    font-size: 24px; font-weight: 900;
+    letter-spacing: -0.03em; color: var(--app-text-primary);
+}
+
+.fiax-surface-subtitle {
+    color: var(--app-text-muted); font-size: 13px; font-weight: 500; margin-top: 4px;
+}
+
+.fiax-surface-actions {
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+
+/* ── Primary action button ─────────────────────────────── */
+.app-btn-blue-pro {
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 10px;
+    background: var(--app-primary);
+    color: #fff !important;
+    border: none;
+    font-size: 13px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 8px;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px var(--app-primary-glow);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    transition: all 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+    white-space: nowrap;
 }
-
 .app-btn-blue-pro:hover {
-    background: #0d9488;
+    background: var(--app-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.34);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
-.app-kpi-master-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
+/* ── Ghost button ──────────────────────────────────────── */
+.app-btn-ghost {
+    height: 32px;
     padding: 0 12px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--app-text-secondary);
+    border: 1px solid var(--app-border);
+    font-size: 12px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.app-btn-ghost:hover {
+    background: var(--app-bg-hover);
+    color: var(--app-text-primary);
+    border-color: var(--app-border-bright);
+}
+.app-btn-ghost.danger { color: var(--app-danger); }
+.app-btn-ghost.danger:hover { background: rgba(239,68,68,0.08); border-color: var(--app-danger); }
+.app-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── KPI toggle control ─────────────────────────────────── */
+.app-kpi-master-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 34px; padding: 0 12px;
     border-radius: 10px;
     border: 1px solid var(--app-border);
-    background: rgba(12, 22, 41, 0.76);
+    background: var(--app-bg-hover);
     color: var(--app-text-secondary);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+    font-size: 12px; font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
 }
-
-.app-kpi-master-toggle i {
-    font-size: 11px;
-    color: var(--app-primary);
-}
-
+.app-kpi-master-toggle i { font-size: 11px; color: var(--app-primary); }
 .app-kpi-master-toggle:hover {
-    color: #fff;
-    border-color: rgba(var(--app-primary-rgb), 0.35);
-    background: rgba(16, 29, 54, 0.9);
-    box-shadow: 0 0 14px rgba(var(--app-primary-rgb), 0.22);
+    color: var(--app-text-primary);
+    border-color: var(--app-primary);
+    background: var(--app-primary-glow);
 }
-
 .app-kpi-master-toggle:focus-visible {
     outline: none;
-    border-color: rgba(var(--app-primary-rgb), 0.55);
-    box-shadow: 0 0 0 2px rgba(var(--app-primary-rgb), 0.25);
+    box-shadow: 0 0 0 3px var(--app-primary-glow);
+}
+
+/* ── Icon badge ─────────────────────────────────────────── */
+.fiax-icon-badge {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: var(--app-primary-glow);
+    color: var(--app-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
 }
