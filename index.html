@@ -5,26 +5,78 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fiax - Facturación Inteligente</title>
-  <meta name="description" content="Fiax — Plataforma de facturación electrónica CFDI 4.0 inteligente para Personas Físicas y Morales." />
+  <meta name="description"
+    content="Fiax — Plataforma de facturación electrónica CFDI 4.0 inteligente para Personas Físicas y Morales." />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body, #app { height: 100%; min-height: 100vh; }
-    body { font-family: 'Manrope', system-ui, sans-serif; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body,
+    #app {
+      height: 100%;
+      min-height: 100vh;
+    }
+
+    body {
+      font-family: 'Manrope', system-ui, sans-serif;
+    }
 
     /* Splash screen */
     .splash {
-      position: fixed; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: #050c1a; z-index: 10000;
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #050c1a;
+      z-index: 10000;
       transition: opacity 0.5s ease;
     }
-    .splash.hidden { opacity: 0; pointer-events: none; }
-    .splash-logo { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 1rem; font-style: italic; letter-spacing: -0.04em; }
-    .splash-sub  { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 2rem; }
-    .splash-loader { width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.08); border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-logo {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 1rem;
+      font-style: italic;
+      letter-spacing: -0.04em;
+    }
+
+    .splash-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .splash-loader {
+      width: 36px;
+      height: 36px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -108,25 +160,17 @@
 
     // ── Bootstrap ─────────────────────────────────────────────────
     async function init() {
-      // Configure Tailwind CDN BEFORE loading it
-      window.tailwind = {
-        config: {
-          darkMode: ['class', '[data-theme="dark"]'],
-          corePlugins: {
-            preflight: false,
-          },
-          theme: {
-            extend: {
-              colors: {
-                brand: { active: '#3b82f6', surface: '#0a1224' }
-              }
-            }
+      // Configure UnoCSS BEFORE loading the runtime script
+      window.__unocss = {
+        theme: {
+          colors: {
+            brand: { active: '#3b82f6', surface: '#0a1224' }
           }
         }
       };
-      
-      // Load Tailwind CSS instead of UnoCSS for robust runtime utility classes
-      await loadScript("https://cdn.tailwindcss.com");
+
+      // Load UnoCSS for Tailwind utility classes used in inner components
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime");
 
       // Load data & logic scripts in correct dependency order
       await loadScript("/js/fiax_demo_data.js");
@@ -172,11 +216,11 @@
 
       // ── Global component registration ────────────────────────────
       const UI = {
-        AppButton:  defineAsyncComponent(() => loadModule('/components/ui/Button.vue', options)),
-        DataTable:  defineAsyncComponent(() => loadModule('/components/app/datatable/DataTable.vue', options)),
-        AppInput:   defineAsyncComponent(() => loadModule('/components/ui/Input.vue', options)),
-        AppBadge:   defineAsyncComponent(() => loadModule('/components/ui/Badge.vue', options)),
-        AppCard:    defineAsyncComponent(() => loadModule('/components/ui/Card.vue', options)),
+        AppButton: defineAsyncComponent(() => loadModule('/components/ui/Button.vue', options)),
+        DataTable: defineAsyncComponent(() => loadModule('/components/app/datatable/DataTable.vue', options)),
+        AppInput: defineAsyncComponent(() => loadModule('/components/ui/Input.vue', options)),
+        AppBadge: defineAsyncComponent(() => loadModule('/components/ui/Badge.vue', options)),
+        AppCard: defineAsyncComponent(() => loadModule('/components/ui/Card.vue', options)),
       };
 
       // ── Router ───────────────────────────────────────────────────
@@ -186,44 +230,44 @@
         { path: '/', alias: ['/index.html', '/dashboard'], component: lm('/features/Dashboard.vue') },
 
         // Comprobantes fiscales
-        { path: '/cfdi/ingresos',     component: lm('/features/InvoicesList.vue'),  props: { type: 'I' } },
-        { path: '/cfdi/egresos',      component: lm('/features/InvoicesList.vue'),  props: { type: 'E' } },
-        { path: '/cfdi/traslado',     component: lm('/features/InvoicesList.vue'),  props: { type: 'T' } },
-        { path: '/cfdi/pagos',        component: lm('/features/PaymentsList.vue') },
-        { path: '/cfdi/nomina',       component: lm('/features/PayrollList.vue') },
+        { path: '/cfdi/ingresos', component: lm('/features/InvoicesList.vue'), props: { type: 'I' } },
+        { path: '/cfdi/egresos', component: lm('/features/InvoicesList.vue'), props: { type: 'E' } },
+        { path: '/cfdi/traslado', component: lm('/features/InvoicesList.vue'), props: { type: 'T' } },
+        { path: '/cfdi/pagos', component: lm('/features/PaymentsList.vue') },
+        { path: '/cfdi/nomina', component: lm('/features/PayrollList.vue') },
         { path: '/cfdi/ingresos/new', component: lm('/features/InvoiceForm.vue') },
         { path: '/cfdi/ingresos/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'I' } },
-        { path: '/cfdi/egresos/:id',  component: lm('/features/InvoiceDetail.vue'), props: { type: 'E' } },
+        { path: '/cfdi/egresos/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'E' } },
         { path: '/cfdi/traslado/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'T' } },
-        { path: '/cfdi/pagos/:id',    component: lm('/features/PaymentDetail.vue') },
-        { path: '/cfdi/nomina/:id',   component: lm('/features/PayrollDetail.vue') },
+        { path: '/cfdi/pagos/:id', component: lm('/features/PaymentDetail.vue') },
+        { path: '/cfdi/nomina/:id', component: lm('/features/PayrollDetail.vue') },
 
         // Catálogos
-        { path: '/clients',           component: lm('/features/ClientsList.vue') },
-        { path: '/products',          component: lm('/features/ProductsList.vue') },
-        { path: '/employees',         component: lm('/features/Placeholder.vue') },
+        { path: '/clients', component: lm('/features/ClientsList.vue') },
+        { path: '/products', component: lm('/features/ProductsList.vue') },
+        { path: '/employees', component: lm('/features/Placeholder.vue') },
 
         // CRM / Ventas
-        { path: '/leads',             component: lm('/features/LeadsList.vue') },
-        { path: '/leads/:id',         component: lm('/features/Placeholder.vue') },
-        { path: '/estimates',         component: lm('/features/EstimatesList.vue') },
-        { path: '/estimates/:id',     component: lm('/features/Placeholder.vue') },
-        { path: '/contracts',         component: lm('/features/ContractsList.vue') },
-        { path: '/contracts/:id',     component: lm('/features/Placeholder.vue') },
+        { path: '/leads', component: lm('/features/LeadsList.vue') },
+        { path: '/leads/:id', component: lm('/features/Placeholder.vue') },
+        { path: '/estimates', component: lm('/features/EstimatesList.vue') },
+        { path: '/estimates/:id', component: lm('/features/Placeholder.vue') },
+        { path: '/contracts', component: lm('/features/ContractsList.vue') },
+        { path: '/contracts/:id', component: lm('/features/Placeholder.vue') },
 
         // Operaciones
-        { path: '/projects',          component: lm('/features/ProjectsList.vue') },
-        { path: '/projects/:id',      component: lm('/features/Placeholder.vue') },
+        { path: '/projects', component: lm('/features/ProjectsList.vue') },
+        { path: '/projects/:id', component: lm('/features/Placeholder.vue') },
 
         // Finanzas
-        { path: '/expenses',          component: lm('/features/ExpensesList.vue') },
-        { path: '/transactions',      component: lm('/features/TransactionsList.vue') },
-        { path: '/transactions/:id',  component: lm('/features/Placeholder.vue') },
+        { path: '/expenses', component: lm('/features/ExpensesList.vue') },
+        { path: '/transactions', component: lm('/features/TransactionsList.vue') },
+        { path: '/transactions/:id', component: lm('/features/Placeholder.vue') },
 
         // Admin
-        { path: '/admin/issuers',     component: lm('/features/IssuersList.vue') },
-        { path: '/jobs',              component: lm('/features/Placeholder.vue') },
-        { path: '/gigs',              component: lm('/features/Placeholder.vue') },
+        { path: '/admin/issuers', component: lm('/features/IssuersList.vue') },
+        { path: '/jobs', component: lm('/features/Placeholder.vue') },
+        { path: '/gigs', component: lm('/features/Placeholder.vue') },
       ];
 
       const router = createRouter({

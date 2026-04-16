@@ -81,6 +81,11 @@
                 setTheme(theme) {
                     this.activeTheme = theme;
                     document.documentElement.setAttribute('data-theme', theme);
+                    if (theme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
                     localStorage.setItem('fiax-theme', theme);
                 },
 
@@ -100,6 +105,7 @@
             const initialTheme = savedTheme || systemTheme;
             vueState.activeTheme = initialTheme;
             document.documentElement.setAttribute('data-theme', initialTheme);
+            if (initialTheme === 'dark') document.documentElement.classList.add('dark');
 
             watch(() => vueState.sidebarCollapsed, (val) => {
                 localStorage.setItem('fiax-sidebar-collapsed', val);
