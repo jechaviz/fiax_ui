@@ -3,7 +3,10 @@
   <div class="app-animate-in" style="padding-bottom:40px;">
 
     <!-- Hero KPI Band -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;margin-bottom:28px;">
+    <div
+      style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;margin-bottom:28px;outline:none;"
+      tabindex="-1"
+    >
       <div v-for="kpi in kpis" :key="kpi.id" class="kpi-card" :style="`--kpi-color:${kpi.color};--kpi-glow:${kpi.glow};`">
         <div class="kpi-card__icon">
           <i :class="kpi.icon"></i>
@@ -214,8 +217,15 @@ export default {
   color: var(--kpi-color, #3b82f6);
 }
 
-.kpi-card__label { font-size: 11px; font-weight: 700; color: var(--app-text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
-.kpi-card__value { font-size: 24px; font-weight: 900; color: var(--app-text-primary); letter-spacing: -0.04em; font-family: var(--app-font-mono); }
+.kpi-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.kpi-card__label { font-size: 11px; font-weight: 800; color: var(--app-text-muted); text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.2; }
+.kpi-card__value { font-size: 24px; font-weight: 900; color: var(--app-text-primary); letter-spacing: -0.04em; font-family: var(--app-font-mono); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kpi-card__trend { grid-column: 2; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
 .kpi-card__trend.is-up  { color: var(--app-success); }
 .kpi-card__trend.is-down { color: var(--app-warning); }
