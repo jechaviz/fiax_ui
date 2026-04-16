@@ -108,9 +108,9 @@
 
     // ── Bootstrap ─────────────────────────────────────────────────
     async function init() {
-      // Load UnoCSS for Tailwind utility classes used in inner components
-      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime");
-      window.__unocss_runtime = {        presets: [
+      // Configure UnoCSS BEFORE loading the runtime script
+      window.__unocss = {
+        presets: [
           () => window.unocss.presetWind(),
           () => window.unocss.presetAttributify(),
         ],
@@ -121,6 +121,9 @@
         },
         config: { dark: 'class', darkSelector: '[data-theme="dark"]' }
       };
+      
+      // Load UnoCSS for Tailwind utility classes used in inner components
+      await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime");
 
       // Load data & logic scripts in correct dependency order
       await loadScript("/js/fiax_demo_data.js");
