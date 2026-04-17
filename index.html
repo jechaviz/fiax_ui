@@ -89,9 +89,6 @@
   <div id="app"></div>
 
   <script>
-    // CDN dependencies are loaded inline to control order
-    const FIAX = window.fiax || (window.fiax = {});
-
     // Global Error Display
     window.addEventListener('error', (e) => {
       if (e.message?.includes('ResizeObserver')) return; // ignore benign
