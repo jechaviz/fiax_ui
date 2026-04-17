@@ -12,7 +12,7 @@
         :rows="filteredPayments" 
         :i18n="{}"
         view-mode="table"
-        surface-key="payments"
+        surface-key="paymentReceipts"
         @row-action="handleRowAction"
         @new-record="createNew"
       />
@@ -28,7 +28,7 @@ export default {
   },
   setup(props) {
     const filteredPayments = Vue.computed(() => {
-      return props.state?.data?.payments || [];
+      return props.state?.data?.paymentReceipts || [];
     });
 
     function createNew() {

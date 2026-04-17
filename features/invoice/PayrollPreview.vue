@@ -11,6 +11,10 @@
       <div class="text-right">
         <h1 class="text-4xl font-black uppercase tracking-tighter text-slate-100 dark:text-slate-700/30 mb-1">RECIBO DE NÓMINA</h1>
         <p class="font-mono text-xl font-bold text-slate-800 dark:text-slate-200">FOLIO: {{ payroll.serie }}{{ payroll.folio }}</p>
+        <div class="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase" 
+             :class="payroll.type === 'O' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400'">
+          NÓMINA {{ payroll.type === 'O' ? 'ORDINARIA' : 'EXTRAORDINARIA' }}
+        </div>
       </div>
     </div>
 

@@ -171,126 +171,134 @@
             }
         ],
 
-        // Complementos de Recepción de Pagos — key debe ser "payments"
-        payments: [
+        // Complementos de Recepción de Pagos (Rich Migration from facturamx-saas)
+        paymentReceipts: [
             {
                 id: 'pay-1',
-                uuid: 'P4Y-M3NT-UUID-0001',
-                serie: 'P', folio: '1',
+                uuid: '7A8B9C0D-1234-5678-9101-ABCDEF123456',
+                version: '2.0', serie: 'P', folio: '501',
                 date: '2024-07-20',
-                paymentDate: '2024-07-20',
+                paymentDate: '2024-07-20T11:00:00Z',
                 status: 'Vigente',
+                issuerId: 'issuer-1',
                 issuer: { name: 'John Doe', rfc: 'DOE880101CDE', taxRegime: '612', postalCode: '50226' },
-                receiver: { name: 'Innovate Inc.', rfc: 'SABR890101ABC', postalCode: '06500' },
+                receiverId: 'user-client-brenda',
+                receiver: { name: 'Innovate Inc.', rfc: 'SABR890101ABC', taxRegime: '601', postalCode: '06500' },
                 clientName: 'Innovate Inc.', clientRfc: 'SABR890101ABC',
-                invoiceFolio: 'A-101', method: 'Transferencia electrónica',
-                paymentType: '03', currency: 'USD', amount: 2508.8, total: 2508.8,
+                amount: 2217, total: 2217, currency: 'USD', exchangeRate: 1,
+                paymentType: '03', // Transferencia electrónica
+                operationNumber: '1234567890',
                 relatedDocuments: [
-                    { uuid: 'E2B5A41C-5373-4109-8663-B624EDC9B071', serie: 'A', folio: '101', amountPaid: 2508.8, previousBalance: 2508.8, remainingBalance: 0, currency: 'USD', installmentNumber: 1 }
-                ]
+                    {
+                        uuid: 'E2B5A41C-5373-4109-8663-B624EDC9B071',
+                        serie: 'A', folio: '101',
+                        currency: 'USD', exchangeRate: 1,
+                        installmentNumber: 1,
+                        previousBalance: 2217,
+                        amountPaid: 2217,
+                        remainingBalance: 0,
+                        objetoImpDR: '02',
+                        taxes: [
+                            { base: 2000, taxType: 'IVA', rate: 0.16, amount: 312, isRetention: false },
+                            { base: 2000, taxType: 'ISR', rate: 0.10, amount: 45, isRetention: true }
+                        ]
+                    }
+                ],
+                notes: 'Liquidación de factura de desarrollo frontend.'
             },
             {
                 id: 'pay-2',
-                uuid: 'P4Y-M3NT-UUID-0002',
-                serie: 'P', folio: '2',
-                date: '2024-08-05',
-                paymentDate: '2024-08-05',
+                uuid: '1A2B3C4D-5678-9101-1121-ABCDEF987654',
+                version: '2.0', serie: 'P', folio: '502',
+                date: '2024-07-25',
+                paymentDate: '2024-07-25T15:30:00Z',
                 status: 'Vigente',
+                issuerId: 'issuer-1',
                 issuer: { name: 'John Doe', rfc: 'DOE880101CDE', taxRegime: '612', postalCode: '50226' },
-                receiver: { name: 'Geomex Solutions SA de CV', rfc: 'GEM900515XYZ', postalCode: '44100' },
-                clientName: 'Geomex Solutions SA de CV', clientRfc: 'GEM900515XYZ',
-                invoiceFolio: 'A-102', method: 'Transferencia electrónica',
-                paymentType: '03', currency: 'MXN', amount: 2842, total: 2842,
+                receiverId: 'user-client-brenda',
+                receiver: { name: 'Innovate Inc.', rfc: 'SABR890101ABC', taxRegime: '601', postalCode: '06500' },
+                clientName: 'Innovate Inc.', clientRfc: 'SABR890101ABC',
+                amount: 1000, total: 1000, currency: 'MXN', exchangeRate: 1,
+                paymentType: '01', // Efectivo
                 relatedDocuments: [
-                    { uuid: 'F3C6B52D-6484-5210-9774-C735FED0C182', serie: 'A', folio: '102', amountPaid: 2842, previousBalance: 5684, remainingBalance: 2842, currency: 'MXN', installmentNumber: 1 }
-                ]
-            },
-            {
-                id: 'pay-3',
-                uuid: 'P4Y-M3NT-UUID-0003',
-                serie: 'P', folio: '3',
-                date: '2024-08-20',
-                paymentDate: '2024-08-20',
-                status: 'Vigente',
-                issuer: { name: 'TECNOVISION SA de CV', rfc: 'TVI990301ABC', taxRegime: '601', postalCode: '11560' },
-                receiver: { name: 'Grupo Alfa SA de CV', rfc: 'GAL700101NL1', postalCode: '66220' },
-                clientName: 'Grupo Alfa SA de CV', clientRfc: 'GAL700101NL1',
-                invoiceFolio: 'A-104', method: 'Cheque nominativo',
-                paymentType: '02', currency: 'MXN', amount: 19740, total: 19740,
-                relatedDocuments: [
-                    { uuid: 'B2E8F74F-8606-7432-1996-E957HGF2E304', serie: 'A', folio: '104', amountPaid: 19740, previousBalance: 19740, remainingBalance: 0, currency: 'MXN', installmentNumber: 1 }
+                    {
+                        uuid: '4F5A6B7C-1234-5678-9101-ABCDEF123456',
+                        serie: 'B', folio: '201',
+                        currency: 'MXN', exchangeRate: 1,
+                        installmentNumber: 1,
+                        previousBalance: 5300,
+                        amountPaid: 1000,
+                        remainingBalance: 4300,
+                        objetoImpDR: '02',
+                        taxes: [
+                            { base: 943.40, taxType: 'IVA', rate: 0.16, amount: 150.94, isRetention: false },
+                            { base: 943.40, taxType: 'ISR', rate: 0.10, amount: 94.34, isRetention: true }
+                        ]
+                    }
                 ]
             }
         ],
 
-        // Recibos de Nómina — key debe ser "payroll"
-        payroll: [
+        // Recibos de Nómina (Rich Migration from facturamx-saas)
+        payrollReceipts: [
             {
-                id: 'payr-1',
+                id: 'pay-rec-1',
                 uuid: 'N0M-1N4-UUID-0001',
-                serie: 'N', folio: '1',
+                serie: 'N', folio: '1001',
                 date: '2024-07-15',
                 status: 'Vigente',
+                issuerId: 'issuer-1',
                 issuer: { name: 'John Doe', rfc: 'DOE880101CDE' },
-                employee: { name: 'Carlos Mendoza', rfc: 'MENC900101ABC', curp: 'MENC900101HDFLRS01', nss: '12345678901' },
-                employeeName: 'Carlos Mendoza',
-                paymentDate: '2024-07-15', startDate: '2024-07-01', endDate: '2024-07-15',
+                employee: { 
+                    name: 'Roberto Gómez Bolaños', 
+                    rfc: 'GOBR290221HOM', 
+                    curp: 'GOBR290221HDFRNS01',
+                    nss: '12345678901'
+                },
+                paymentDate: '2024-07-15',
+                startDate: '2024-07-01',
+                endDate: '2024-07-15',
+                salary: 12007.50,
                 type: 'O', // Ordinaria
                 currency: 'MXN',
                 perceptions: [
-                    { type: '001', clave: 'SUEL', concept: 'Sueldo Base', amountTaxable: 15000, amountExempt: 0 },
-                    { type: '038', clave: 'BONO', concept: 'Bono Puntualidad', amountTaxable: 1000, amountExempt: 0 }
+                    { type: '001', clave: 'P001', concept: 'Sueldos y Salarios', amountExempt: 0, amountTaxable: 13500.00 }
                 ],
                 deductions: [
-                    { type: '001', clave: 'IMSS', concept: 'Cuota IMSS', amount: 450.50 },
-                    { type: '002', clave: 'ISR', concept: 'Retención ISR', amount: 1540.20 }
+                    { type: '001', clave: 'D001', concept: 'Seguridad Social (IMSS)', amount: 1492.50 }
                 ],
-                subtotal: 16000, discount: 1990.70, total: 14009.30
+                subtotal: 13500.00, // Percepciones
+                discount: 1492.50,  // Deducciones
+                total: 12007.50    // Neto
             },
             {
-                id: 'payr-2',
+                id: 'pay-rec-2',
                 uuid: 'N0M-1N4-UUID-0002',
-                serie: 'N', folio: '2',
+                serie: 'N', folio: '1002',
                 date: '2024-07-15',
                 status: 'Vigente',
+                issuerId: 'issuer-1',
                 issuer: { name: 'John Doe', rfc: 'DOE880101CDE' },
-                employee: { name: 'Ana López García', rfc: 'LOGA950215FGH', curp: 'LOGA950215MDFPNM02', nss: '98765432100' },
-                employeeName: 'Ana López García',
-                paymentDate: '2024-07-15', startDate: '2024-07-01', endDate: '2024-07-15',
+                employee: { 
+                    name: 'Florinda Meza García', 
+                    rfc: 'MEGF490208MDF', 
+                    curp: 'MEGF490208MDFRNS05',
+                    nss: '98765432100'
+                },
+                paymentDate: '2024-07-15',
+                startDate: '2024-07-01',
+                endDate: '2024-07-15',
+                salary: 6750.00,
                 type: 'O',
-                currency: 'MXN',
                 perceptions: [
-                    { type: '001', clave: 'SUEL', concept: 'Sueldo Base', amountTaxable: 12000, amountExempt: 0 },
-                    { type: '019', clave: 'HORA', concept: 'Horas Extra', amountTaxable: 800, amountExempt: 800 }
+                    { type: '001', clave: 'P001', concept: 'Sueldos y Salarios', amountExempt: 0, amountTaxable: 7200.00 }
                 ],
                 deductions: [
-                    { type: '001', clave: 'IMSS', concept: 'Cuota IMSS', amount: 360.00 },
-                    { type: '002', clave: 'ISR', concept: 'Retención ISR', amount: 920.50 }
+                    { type: '001', clave: 'D001', concept: 'Seguridad Social', amount: 450.00 }
                 ],
-                subtotal: 12800, discount: 1280.50, total: 11519.50
-            },
-            {
-                id: 'payr-3',
-                uuid: 'N0M-1N4-UUID-0003',
-                serie: 'N', folio: '3',
-                date: '2024-07-31',
-                status: 'Vigente',
-                issuer: { name: 'TECNOVISION SA de CV', rfc: 'TVI990301ABC' },
-                employee: { name: 'Roberto Juárez Hdez', rfc: 'JUHR880730IJK', curp: 'JUHR880730HDFZMB09', nss: '55544433322' },
-                employeeName: 'Roberto Juárez Hdez',
-                paymentDate: '2024-07-31', startDate: '2024-07-16', endDate: '2024-07-31',
-                type: 'E', // Extraordinaria
-                currency: 'MXN',
-                perceptions: [
-                    { type: '001', clave: 'SUEL', concept: 'Sueldo Base', amountTaxable: 18000, amountExempt: 0 },
-                    { type: '002', clave: 'AGUI', concept: 'Aguinaldo', amountTaxable: 3000, amountExempt: 3000 }
-                ],
-                deductions: [
-                    { type: '001', clave: 'IMSS', concept: 'Cuota IMSS', amount: 540.00 },
-                    { type: '002', clave: 'ISR', concept: 'Retención ISR', amount: 2100.00 },
-                    { type: '005', clave: 'FONACOT', concept: 'FONACOT', amount: 300.00 }
-                ],
-                subtotal: 21000, discount: 2940.00, total: 18060.00
+                subtotal: 7200.00,
+                discount: 450.00,
+                total: 6750.00
             }
         ],
 

@@ -192,30 +192,34 @@
         </div>
       </div>
 
-      <div class="w-full max-w-xs flex-shrink-0">
-        <div class="bg-slate-50 dark:bg-slate-700/20 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 space-y-4 shadow-sm">
+      <div class="w-full max-w-[280px] flex-shrink-0">
+        <div class="space-y-2.5">
+          <!-- Itemized Totals -->
           <div class="flex justify-between text-sm">
-            <span class="text-slate-500 dark:text-slate-400 font-medium">Subtotal</span>
-            <span class="font-bold text-slate-800 dark:text-slate-200">{{ formatCurrency(computedSubtotal) }}</span>
+            <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
+            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ formatCurrency(computedSubtotal) }}</span>
           </div>
           
-          <div v-if="computedDiscount > 0" class="flex justify-between text-sm text-red-600 dark:text-red-400">
-            <span class="font-medium">Descuento</span>
-            <span class="font-bold">-{{ formatCurrency(computedDiscount) }}</span>
+          <div v-if="computedDiscount > 0" class="flex justify-between text-sm">
+            <span class="text-slate-500 dark:text-slate-400">Descuento</span>
+            <span class="font-semibold text-red-600 dark:text-red-400">-{{ formatCurrency(computedDiscount) }}</span>
           </div>
 
-          <div v-for="(group, gIdx) in taxGroups" :key="gIdx" class="flex justify-between text-[11px] font-mono uppercase tracking-tight">
+          <div v-for="(group, gIdx) in taxGroups" :key="gIdx" class="flex justify-between text-sm">
             <span class="text-slate-500 dark:text-slate-400">
-              {{ group.taxType }} {{ (group.rate * 100).toFixed(2) }}% {{ group.isRetention ? '(RET)' : '(TRA)' }}
+              {{ group.taxType }} {{ (group.rate * 100).toFixed(0) }}% {{ group.isRetention ? '(RET)' : '(TRA)' }}
             </span>
-            <span :class="group.isRetention ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'" class="font-bold">
+            <span :class="group.isRetention ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'" class="font-semibold">
               {{ group.isRetention ? '-' : '' }}{{ formatCurrency(group.amount) }}
             </span>
           </div>
 
-          <div class="pt-6 border-t border-slate-200 dark:border-slate-600 flex justify-between items-end text-primary-600 dark:text-primary-400">
-            <span class="font-black text-xs uppercase tracking-widest pb-1">Total {{ invoice.currency || 'MXN' }}</span>
-            <span class="text-4xl font-black tracking-tighter leading-none">{{ formatCurrency(computedTotal) }}</span>
+          <!-- Final Result -->
+          <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+            <div class="flex flex-col items-end">
+              <span class="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-400 mb-1">Total {{ invoice.currency || 'MXN' }}</span>
+              <span class="text-3xl font-black tracking-tight text-primary-600 dark:text-primary-400">{{ formatCurrency(computedTotal) }}</span>
+            </div>
           </div>
         </div>
       </div>

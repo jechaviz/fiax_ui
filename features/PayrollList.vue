@@ -12,7 +12,7 @@
         :rows="filteredPayroll" 
         :i18n="{}"
         view-mode="table"
-        surface-key="payroll"
+        surface-key="payrollReceipts"
         @row-action="handleRowAction"
         @new-record="createNew"
       />
@@ -28,7 +28,7 @@ export default {
   },
   setup(props) {
     const filteredPayroll = Vue.computed(() => {
-      return props.state?.data?.payroll || [];
+      return props.state?.data?.payrollReceipts || [];
     });
 
     function createNew() {

@@ -69,7 +69,14 @@
             <tr v-for="doc in payment.relatedDocuments" :key="doc.uuid" class="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
               <td class="p-4">
                 <div class="text-xs font-black text-slate-900 dark:text-white mb-1">{{ doc.serie }}{{ doc.folio }}</div>
-                <div class="text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">{{ doc.uuid }}</div>
+                <div class="text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{{ doc.uuid }}</div>
+                
+                <!-- Taxes per Document -->
+                <div v-if="doc.taxes && doc.taxes.length" class="flex flex-wrap gap-2">
+                  <span v-for="(tax, tidx) in doc.taxes" :key="tidx" class="text-[8px] font-bold text-slate-400 border border-slate-200 dark:border-slate-700 px-1 rounded uppercase tracking-tighter">
+                    {{ tax.taxType }} {{ (tax.rate * 100).toFixed(0) }}%: {{ formatCurrency(tax.amount, doc.currency) }}
+                  </span>
+                </div>
               </td>
               <td class="p-4 text-right font-black text-slate-900 dark:text-white text-sm">{{ formatCurrency(doc.amountPaid, doc.currency) }}</td>
               <td class="p-4 text-right font-medium text-slate-500 dark:text-slate-400 text-xs">{{ formatCurrency(doc.previousBalance, doc.currency) }}</td>
@@ -110,9 +117,9 @@
       <div class="w-full max-w-sm flex-shrink-0">
         <div class="bg-primary-600 dark:bg-primary-700 rounded-3xl p-8 space-y-6 shadow-xl shadow-primary-500/20 text-white">
           <div class="text-center space-y-2 mb-4 border-b border-white/10 pb-4">
-             <p class="text-[10px] font-bold text-primary-200 uppercase tracking-widest">Monto Total de Pago</p>
-             <h3 class="text-4xl font-black tracking-tighter">{{ formatCurrency(payment.total, payment.currency) }}</h3>
-             <p class="text-xs text-primary-100 font-bold uppercase tracking-widest">{{ payment.currency }}</p>
+             <p class="text-[10px] font-bold text-primary-200 uppercase tracking-widest leading-none">Monto Total de Pago</p>
+             <h3 class="text-4xl font-black tracking-tighter leading-none py-1">{{ formatCurrency(payment.total, payment.currency) }}</h3>
+             <p class="text-[10px] text-primary-100 font-bold uppercase tracking-widest leading-none">{{ payment.currency }}</p>
           </div>
           
           <div class="space-y-3 text-[10px] text-primary-100 font-bold uppercase tracking-widest">
