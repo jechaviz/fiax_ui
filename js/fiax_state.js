@@ -120,6 +120,11 @@
                     localStorage.setItem('fiax-theme', theme);
                 },
 
+                toggleTheme() {
+                    const newTheme = this.activeTheme === 'dark' ? 'light' : 'dark';
+                    this.setTheme(newTheme);
+                },
+
                 toggleDemoMode() {
                     this.demoMode = !this.demoMode;
                     localStorage.setItem('fiax_demo_mode', this.demoMode);

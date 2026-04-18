@@ -88,6 +88,15 @@
         </div>
         
         <button 
+          class="footer-toggle-btn mb-2" 
+          @click="state.toggleTheme()"
+          title="Cambiar Tema"
+        >
+          <i :class="state.activeTheme === 'dark' ? 'fa-solid fa-moon text-indigo-400' : 'fa-solid fa-sun text-amber-400'"></i>
+          <span>{{ state.activeTheme === 'dark' ? 'Dark Mode' : 'Light Mode' }}</span>
+        </button>
+
+        <button 
           class="footer-toggle-btn" 
           @click="state.toggleDemoMode()"
           :title="state.demoMode ? 'Pasar a Producción' : 'Regresar a Demo'"
