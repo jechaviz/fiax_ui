@@ -40,6 +40,13 @@
                 rfc: 'TVI990301ABC',
                 taxRegime: '601',
                 branches: [{ id: 'branch-2-1', name: 'Oficina Central', postalCode: '11560' }],
+            },
+            {
+                id: 'issuer-mpt',
+                name: 'Mannesmann Precision Tubes Mexico S.A. de C.V.',
+                rfc: 'MPT0710186W1',
+                taxRegime: '601',
+                branches: [{ id: 'branch-mpt-1', name: 'Planta El Marqués', postalCode: '76240' }],
             }
         ],
 

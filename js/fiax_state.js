@@ -1,7 +1,7 @@
 
 // Fiax State Management - Ported from facturamx-saas/context and store
 (() => {
-    const { reactive, watch } = Vue;
+    const { reactive, watch, computed } = Vue;
     const FIAX = window.fiax || (window.fiax = {});
     
     let vueState = null;
@@ -10,13 +10,38 @@
         ensureState() {
             if (vueState) return vueState;
 
-            const DATA = FIAX.demo_data || { users: [], invoices: [], products: [], dashboard: { stats: {}, recentActivity: [], widgets: [] } };
+            const DEFAULT_SCHEMA = { 
+                _v: '1.0', 
+                users: [], issuers: [], invoices: [], products: [], 
+                paymentReceipts: [], payrollReceipts: [],
+                dashboard: { stats: {}, recentActivity: [] } 
+            };
+            const DATA = { ...DEFAULT_SCHEMA, ...(FIAX.demo_data || {}) };
             const I18N = FIAX.i18n?.es || {};
+            const PB = FIAX.pb;
+
+            // Load saved demo mode or default to true
+            const savedDemoMode = localStorage.getItem('fiax_demo_mode') !== 'false';
+            // Load saved demo data or default from file
+            let demoData = DATA;
+            try {
+                const saved = localStorage.getItem('fiax_demo_data');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    // Reset if version mismatch
+                    if (parsed._v === DATA._v) demoData = parsed;
+                }
+            } catch (e) { console.error('[Fiax State] demoData parse error', e); }
 
             vueState = reactive({
+                // Environment
+                demoMode: savedDemoMode,
+                demoData: demoData,
+                
                 // Core Data
-                user: (DATA.users || []).find(u => u.type !== 'Client') || DATA.users?.[0] || { name: 'Admin', rfc: 'FIAX123456XXX' }, 
-                data: DATA,
+                pb: PB,
+                user: null, // Populated below
+                get data() { return this.demoMode ? this.demoData : { issuers: [], invoices: [], products: [] }; },
                 i18n: I18N,
                 constants: FIAX.constants || {},
                 config: FIAX.config || { navigation: [] },
@@ -29,7 +54,9 @@
                 loading: false,
                 
                 // Session
-                currentIssuer: DATA.issuers?.[0] || null,
+                currentIssuer: null,
+                activeRules: computed(() => FIAX.rules?._state.activeRules),
+                rulesLoading: computed(() => FIAX.rules?._state.loading),
                 
                 // Helpers
                 t(key) {
@@ -71,10 +98,14 @@
                     }
                 },
 
-                switchIssuer(id) {
+                async switchIssuer(id) {
                     const issuer = this.data.issuers.find(i => i.id === id);
                     if (issuer) {
                         this.currentIssuer = issuer;
+                        // Synchronize Rules for this issuer
+                        if (FIAX.rules && issuer.rfc) {
+                            await FIAX.rules.sync(issuer.rfc);
+                        }
                     }
                 },
 
@@ -89,11 +120,28 @@
                     localStorage.setItem('fiax-theme', theme);
                 },
 
-                toggleTheme() {
-                    const newTheme = this.activeTheme === 'dark' ? 'light' : 'dark';
-                    this.setTheme(newTheme);
+                toggleDemoMode() {
+                    this.demoMode = !this.demoMode;
+                    localStorage.setItem('fiax_demo_mode', this.demoMode);
+                    window.location.reload(); // Force full app re-hydration
+                },
+
+                resetDemoData() {
+                    this.demoData = FIAX.demo_data;
+                    localStorage.setItem('fiax_demo_data', JSON.stringify(FIAX.demo_data));
+                    if (this.demoMode) window.location.reload();
                 }
             });
+
+            // Identity Resolver
+            if (vueState.demoMode) {
+                // In demo, we use a fixed virtual user from the demo data
+                vueState.user = (vueState.demoData.users || []).find(u => u.type === 'Freelancer') 
+                              || (vueState.demoData.users || [])[0];
+            } else {
+                // In production, we use the PB session
+                vueState.user = FIAX.auth?.getCurrentUser();
+            }
 
             // Persist sidebar state
             const savedSidebar = localStorage.getItem('fiax-sidebar-collapsed');
@@ -110,6 +158,12 @@
             watch(() => vueState.sidebarCollapsed, (val) => {
                 localStorage.setItem('fiax-sidebar-collapsed', val);
             });
+
+            // Initial Issuer Load
+            const issuers = vueState.demoMode ? vueState.demoData.issuers : [];
+            if (issuers?.[0]) {
+                vueState.switchIssuer(issuers[0].id);
+            }
 
             return vueState;
         }
