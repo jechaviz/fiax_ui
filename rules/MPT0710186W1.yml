@@ -1,0 +1,70 @@
+# Mannesmann Precision Tubes Mexico - Business Rules
+issuer_rfc: 'MPT0710186W1'
+
+# UI Overrides for the Line Items table
+form:
+  line_items:
+    columns:
+      pos:
+        label: 'Pos'
+        visible: true
+      part_no:
+        label: 'Código de Parte'
+        visible: true
+      order_no:
+        label: 'Pedido'
+        visible: true
+      delivery_no:
+        label: 'Entrega'
+        visible: true
+      lot:
+        label: 'Lote'
+        visible: true
+
+# Semantic Logic for Labels
+labels:
+  issuer_receiver:
+    title:
+      I: 'Facturado a'
+      P: 'Emitido a'
+    receiver_id: 'No. de cliente'
+
+# Automatic Fiscal Logic
+logic_rules:
+  legal_mentions:
+    - id: 'immex_virtual_transfer'
+      condition: "invoice.receiver.rfc == 'XEXX010101000'"
+      text: "Operación de Transferencia Virtual de conformidad con el Artículo 29 Fracción I, de la Ley del IVA y Art. 112 de la Ley Aduanera. Programa IMMEX: 669-2007."
+
+# Unified Dynamic Template System (UDTS)
+template:
+  global:
+    primary_color: '#003366' # Mannesmann Blue
+    font_family: 'Outfit, sans-serif'
+    maps:
+      docs:
+        I: { es: 'FACTURA', en: 'INVOICE' }
+        E: { es: 'NOTA DE CRÉDITO', en: 'CREDIT NOTE' }
+        P: { es: 'RECIBO DE PAGO', en: 'PAYMENT RECEIPT' }
+  structure:
+    - band: 'Header'
+      style: 'modern-industrial'
+      show_logo: true
+      text_pattern: '<b>~Lugar de Expedición~Place of Issue~:</b><br/>{address}'
+    - band: 'Parties'
+      layout: 'side-by-side'
+    - band: 'Table'
+      columns:
+        - { id: 'description', label: '~Descripción~Description~', align: 'left' }
+        - { id: 'quantity', label: '~Cant~Qty~', align: 'right' }
+        - { id: 'unitPrice', label: '~P. Unitario~Unit Price~', align: 'right' }
+        - { id: 'amount', label: '~Importe~Amount~', align: 'right' }
+    - band: 'Totals'
+    - band: 'Legal'
+
+# UI Settings
+settings:
+  bilingual: true
+  export_language_toggle: true
+  high_density: true
+  price_format: "${amount} ${currency}/${unit_category}"

@@ -1,0 +1,16 @@
+# Basic Rules for John Doe (Freelancer)
+template:
+  global:
+    primary_color: '#ea580c' # Orange-600
+    font_family: 'Inter, sans-serif'
+  structure:
+    - band: 'Header'
+      style: 'minimal'
+    - band: 'Parties'
+    - band: 'Table'
+    - band: 'Totals'
+    - band: 'Legal'
+
+settings:
+  bilingual: false
+  high_density: false

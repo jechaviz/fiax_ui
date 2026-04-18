@@ -1,0 +1,16 @@
+# Basic Rules for TECNOVISION SA de CV
+template:
+  global:
+    primary_color: '#8b5cf6' # Violet-500
+    font_family: 'Inter, sans-serif'
+  structure:
+    - band: 'Header'
+      style: 'corporate'
+    - band: 'Parties'
+    - band: 'Table'
+    - band: 'Totals'
+    - band: 'Legal'
+
+settings:
+  bilingual: false
+  high_density: true
