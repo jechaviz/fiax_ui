@@ -112,6 +112,7 @@
   <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
   <script src="https://unpkg.com/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
 
   <script type="module">
     const { createApp, defineAsyncComponent, onMounted } = Vue;
@@ -185,7 +186,8 @@
         };
       }
 
-      // 3. Load UnoCSS Core Runtime last
+      // 3. Load style utilities
+      await loadScript("https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js");
       await loadScript("https://cdn.jsdelivr.net/npm/@unocss/runtime/core.global.js");
 
       // 4. Load data & logic scripts in correct dependency order
@@ -198,6 +200,11 @@
       await loadScript("/js/fiax_datatable_filters.js");
       await loadScript("/js/fiax_datatable_views.js");
       await loadScript("/js/fiax_logic_cfdi.js");
+      await loadScript("/js/pb_client.js");
+      await loadScript("/js/rules_service.js");
+      await loadScript("./js/fiax_rules_engine.js");
+      await loadScript("./js/fiax_pdf_engine.js"); 
+      await loadScript("./js/fiax_api.js");
       await loadScript("/js/fiax_ai.js");
 
       // ── SFC Loader options ───────────────────────────────────────
@@ -244,6 +251,7 @@
 
       const routes = [
         { path: '/', alias: ['/index.html', '/dashboard'], component: lm('/features/Dashboard.vue') },
+        { path: '/login', component: lm('/features/Login.vue') },
 
         // Comprobantes fiscales
         { path: '/cfdi/ingresos', component: lm('/features/InvoicesList.vue'), props: { type: 'I' } },
@@ -253,8 +261,14 @@
         { path: '/cfdi/nomina', component: lm('/features/PayrollList.vue') },
         { path: '/cfdi/ingresos/new', component: lm('/features/InvoiceForm.vue') },
         { path: '/cfdi/ingresos/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'I' } },
+        { path: '/cfdi/ingresos/:id/edit', component: lm('/features/InvoiceForm.vue'), props: true },
+        
         { path: '/cfdi/egresos/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'E' } },
+        { path: '/cfdi/egresos/:id/edit', component: lm('/features/InvoiceForm.vue'), props: route => ({ id: route.params.id, type: 'E' }) },
+
         { path: '/cfdi/traslado/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'T' } },
+        { path: '/cfdi/traslado/:id/edit', component: lm('/features/InvoiceForm.vue'), props: route => ({ id: route.params.id, type: 'T' }) },
+
         { path: '/cfdi/pagos/:id', component: lm('/features/PaymentDetail.vue') },
         { path: '/cfdi/nomina/:id', component: lm('/features/PayrollDetail.vue') },
 
@@ -290,6 +304,22 @@
         history: createWebHashHistory(),
         routes,
         scrollBehavior: () => ({ top: 0 }),
+      });
+
+      // ── Navigation Guard (Hybrid Mode) ──────────────────────────
+      router.beforeEach((to, from, next) => {
+        const state = FIAX.state.ensureState();
+        
+        // If in Production Mode and not logged in, redirect to /login
+        if (!state.demoMode && to.path !== '/login' && !FIAX.auth.isAuthenticated()) {
+            console.warn('[Fiax Security] Guard Redirect -> /login');
+            next('/login');
+        } else if (to.path === '/login' && (state.demoMode || FIAX.auth.isAuthenticated())) {
+            // If already logged in or in demo, don't show login
+            next('/dashboard');
+        } else {
+            next();
+        }
       });
 
       FIAX._router = router;

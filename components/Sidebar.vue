@@ -79,6 +79,23 @@
         </div>
         <i v-show="!state.sidebarCollapsed" class="fa-solid fa-right-from-bracket" style="font-size:10px;color:var(--app-text-muted);margin-left:auto;flex-shrink:0;"></i>
       </div>
+
+      <!-- Sidebar Footer (Theme / Demo Toggle) -->
+      <footer class="sidebar-footer" v-show="!state.sidebarCollapsed">
+        <div v-if="state.demoMode" class="demo-badge">
+           <div class="demo-pulse"></div>
+           <span>Modo Demo Activo</span>
+        </div>
+        
+        <button 
+          class="footer-toggle-btn" 
+          @click="state.toggleDemoMode()"
+          :title="state.demoMode ? 'Pasar a Producción' : 'Regresar a Demo'"
+        >
+          <i :class="state.demoMode ? 'fa-solid fa-toggle-on text-primary' : 'fa-solid fa-toggle-off'"></i>
+          <span>{{ state.demoMode ? 'Live Mode' : 'Demo Mode' }}</span>
+        </button>
+      </footer>
     </div>
 
     <!-- Collapse toggle -->
