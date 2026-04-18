@@ -1,227 +1,31 @@
 <template>
-  <div class="bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-10 max-w-5xl mx-auto font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300" id="invoice-preview">
-    <!-- Header Section -->
-    <div class="grid grid-cols-2 gap-12 mb-12 border-b border-slate-100 dark:border-slate-700/50 pb-12">
-      <div class="space-y-4">
-        <h2 class="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">{{ invoice.issuer?.name }}</h2>
-        <div class="space-y-1 text-sm text-slate-500 dark:text-slate-400">
-          <p><span class="font-semibold text-slate-700 dark:text-slate-300">RFC:</span> {{ invoice.issuer?.rfc }}</p>
-          <p><span class="font-semibold text-slate-700 dark:text-slate-300">Régimen Fiscal:</span> {{ resolveLabel('RegimenFiscal', invoice.issuer?.taxRegime) }}</p>
-          <p><span class="font-semibold text-slate-700 dark:text-slate-300">Lugar de Expedición:</span> {{ invoice.expeditionPlace }}</p>
-        </div>
-      </div>
-      <div class="text-right">
-        <h1 class="text-5xl font-black uppercase tracking-tighter text-slate-100 dark:text-slate-700/30 mb-2 leading-none">FACTURA</h1>
-        <p class="font-mono text-2xl font-bold text-slate-800 dark:text-slate-200">{{ invoice.serie }}{{ invoice.folio }}</p>
-        <div v-if="invoice.uuid" class="mt-6">
-          <p class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">UUID: {{ invoice.uuid }}</p>
-        </div>
-      </div>
+  <div class="relative group">
+    <!-- Action Toolbar (Hidden in PDF) -->
+    <div class="absolute -top-14 right-0 flex items-center gap-3 no-print opacity-0 group-hover:opacity-100 transition-all duration-300">
+       <button 
+         @click="exportToPdf"
+         :disabled="isExporting"
+         class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+       >
+         <span v-if="isExporting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+         <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+         {{ isExporting ? 'Generando...' : 'Exportar PDF' }}
+       </button>
     </div>
 
-    <!-- Relationships & Global Info -->
-    <div v-if="invoice.cfdiRelacionados && invoice.cfdiRelacionados.uuids?.length" class="mb-8 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600">
-      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">CFDI Relacionados</p>
-      <div class="text-sm space-y-1">
-        <p class="text-slate-600 dark:text-slate-400"><strong>Tipo de Relación:</strong> {{ resolveLabel('TipoRelacion', invoice.cfdiRelacionados.tipoRelacion) }}</p>
-        <p class="text-slate-600 dark:text-slate-400 font-mono text-xs"><strong>UUIDs:</strong> {{ invoice.cfdiRelacionados.uuids.join(', ') }}</p>
-      </div>
-    </div>
+    <!-- The Assembler Container -->
+    <div class="bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-10 max-w-5xl mx-auto font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300" id="invoice-capture-area" :style="globalStyles">
+      <template v-for="(band, bIdx) in templateStructure" :key="bIdx">
+         <component 
+           :is="band.component" 
+           :invoice="enrichedInvoice" 
+           :config="band.config || {}" 
+         />
+      </template>
 
-    <div v-if="invoice.informacionGlobal" class="mb-8 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600">
-      <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Información Global</p>
-      <div class="grid grid-cols-3 gap-6 text-sm">
-        <div><strong class="text-slate-500">Periodicidad:</strong> <span class="text-slate-700 dark:text-slate-300">{{ resolveLabel('Periodicidad', invoice.informacionGlobal.periodicidad) }}</span></div>
-        <div><strong class="text-slate-500">Meses:</strong> <span class="text-slate-700 dark:text-slate-300">{{ resolveLabel('Meses', invoice.informacionGlobal.meses) }}</span></div>
-        <div><strong class="text-slate-500">Año:</strong> <span class="text-slate-700 dark:text-slate-300">{{ invoice.informacionGlobal.año }}</span></div>
-      </div>
-    </div>
-
-    <!-- Receiver & Dates -->
-    <div class="grid grid-cols-2 gap-12 mb-12 p-8 bg-slate-50 dark:bg-slate-700/30 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-      <div>
-        <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Receptor</p>
-        <p class="font-bold text-xl text-slate-900 dark:text-white mb-2">{{ invoice.receiver?.name }}</p>
-        <div class="space-y-1.5 text-sm text-slate-600 dark:text-slate-400">
-          <p><span class="font-semibold text-slate-700 dark:text-slate-300">RFC:</span> {{ invoice.receiver?.rfc }}</p>
-          <p><span class="font-semibold text-slate-700 dark:text-slate-300">Uso CFDI:</span> {{ resolveLabel('UsoCFDI', invoice.receiver?.cfdiUse) }}</p>
-          <p><span class="font-semibold text-slate-700 dark:text-slate-300">Dom. Fiscal:</span> {{ invoice.receiver?.postalCode }}</p>
-          <p v-if="invoice.receiver?.taxRegime"><span class="font-semibold text-slate-700 dark:text-slate-300">Régimen:</span> {{ resolveLabel('RegimenFiscal', invoice.receiver.taxRegime) }}</p>
-        </div>
-      </div>
-      <div class="text-right flex flex-col justify-between">
-        <div>
-          <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Fecha y Hora de Emisión</p>
-          <p class="text-slate-800 dark:text-slate-200 font-medium">{{ formatDate(invoice.date) }}</p>
-        </div>
-        <div class="mt-6 space-y-3">
-          <div class="grid grid-cols-2 gap-4 text-right">
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Método de Pago</p>
-              <p class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentMethod }}</p>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Forma de Pago</p>
-              <p class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentType }}</p>
-            </div>
-          </div>
-          <div v-if="invoice.condicionesDePago" class="pt-2 border-t border-slate-200 dark:border-slate-700">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Condiciones</p>
-            <p class="text-slate-800 dark:text-slate-200 text-sm italic">{{ invoice.condicionesDePago }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Line Items Table -->
-    <div class="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl mb-8">
-      <table class="w-full text-left table-fixed">
-        <thead>
-          <tr class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-            <th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 w-[50%]">Descripción del Concepto</th>
-            <th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right w-[10%]">Cant.</th>
-            <th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right w-[15%]">Unitario</th>
-            <th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right w-[10%]">Desc.</th>
-            <th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right w-[15%]">Importe</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
-          <template v-for="(item, idx) in invoice.lineItems" :key="item.id || idx">
-            <!-- Main Content Row -->
-            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
-              <td class="p-4 pb-1 align-top">
-                <div class="flex flex-col gap-1 mb-1">
-                  <div class="text-[10px] font-mono uppercase tracking-widest leading-none flex items-center gap-2 flex-wrap">
-                    <span v-if="item.noIdentificacion" class="text-slate-600 dark:text-slate-300 font-bold">ID: {{ item.noIdentificacion }}</span>
-                    <span v-if="item.noIdentificacion" class="text-slate-300 dark:text-slate-600">|</span>
-                    <span class="text-slate-400 dark:text-slate-500">{{ resolveUnit(item.unitCode) }}: {{ item.unitCode }}</span>
-                    <span class="text-slate-300 dark:text-slate-600">|</span>
-                    <span class="text-slate-400 dark:text-slate-500">CPS: {{ item.productCode }}</span>
-                  </div>
-                </div>
-                <div class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-snug">
-                  {{ item.description }}
-                </div>
-              </td>
-              <td class="p-4 pb-1 text-right align-top text-sm text-slate-600 dark:text-slate-400">{{ item.quantity }}</td>
-              <td class="p-4 pb-1 text-right align-top text-sm text-slate-600 dark:text-slate-400">{{ formatCurrency(item.unitPrice) }}</td>
-              <td class="p-4 pb-1 text-right align-top text-sm text-slate-400">{{ formatCurrency(item.discount || 0) }}</td>
-              <td class="p-4 pb-1 text-right align-top text-sm font-bold text-slate-900 dark:text-white">{{ formatCurrency(item.amount) }}</td>
-            </tr>
-            
-            <!-- Taxes & Advanced Info Row -->
-            <tr class="border-none">
-              <td colspan="5" class="p-4 pt-1 pb-4">
-                <div class="flex flex-col gap-3">
-                  <!-- Tax Groups for the item -->
-                  <div v-if="item.taxes?.length" class="flex flex-col items-end gap-1">
-                    <div v-for="(tax, tIdx) in item.taxes" :key="tIdx" class="flex justify-between w-64 text-[10px] font-mono uppercase tracking-widest border-b border-slate-50 dark:border-slate-700/30 pb-0.5 last:border-0">
-                      <span class="text-slate-400 dark:text-slate-500">{{ tax.taxType }} {{ (tax.rate * 100).toFixed(2) }}% {{ tax.isRetention ? '(Ret)' : '(Tra)' }}</span>
-                      <span :class="tax.isRetention ? 'text-red-500 dark:text-red-400' : 'text-slate-600 dark:text-slate-300'" class="font-bold">
-                        {{ tax.isRetention ? '-' : '' }}{{ formatCurrency(tax.amount) }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Advanced metadata (Aduana, Predial, etc) -->
-                  <div v-if="hasAdvancedInfo(item)" class="pl-4 border-l-2 border-slate-100 dark:border-slate-700 space-y-2 py-1">
-                    <div v-if="item.informacionAduanera?.length" class="flex items-center gap-2 text-[10px]">
-                      <span class="font-bold text-slate-400 uppercase tracking-widest">Aduana:</span>
-                      <span v-for="ped in item.informacionAduanera" :key="ped.numeroPedimento" class="text-slate-700 dark:text-slate-300 font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{{ ped.numeroPedimento }}</span>
-                    </div>
-                    <div v-if="item.cuentaPredial" class="flex items-center gap-2 text-[10px]">
-                      <span class="font-bold text-slate-400 uppercase tracking-widest">Predial:</span>
-                      <span class="text-slate-700 dark:text-slate-300 font-mono">{{ item.cuentaPredial.numero }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Parts (Sub-items) -->
-                  <div v-if="item.partes?.length" class="mt-2 pl-4 border-l-2 border-indigo-100 dark:border-indigo-900/50">
-                     <p class="text-[9px] font-bold text-indigo-400 dark:text-indigo-400/60 uppercase tracking-widest mb-2">Partes / Componentes</p>
-                     <div class="overflow-hidden border border-slate-100 dark:border-slate-700 rounded-lg bg-slate-50/20 dark:bg-slate-900/20">
-                        <table class="w-full text-left text-[10px]">
-                          <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
-                              <th class="p-2 font-bold text-slate-500 uppercase">Descripción</th>
-                              <th class="p-2 font-bold text-slate-500 text-right">Cant.</th>
-                              <th class="p-2 font-bold text-slate-500 text-right">Unitario</th>
-                              <th class="p-2 font-bold text-slate-500 text-right">Importe</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="part in item.partes" :key="part.id" class="border-b border-slate-50 dark:border-slate-700/30 last:border-0">
-                              <td class="p-2">
-                                <span v-if="part.productCode" class="text-[9px] font-mono text-slate-400 dark:text-slate-500 mr-2">CPS: {{ part.productCode }}</span>
-                                <span class="font-semibold text-slate-700 dark:text-slate-300">{{ part.description }}</span>
-                              </td>
-                              <td class="p-2 text-right text-slate-600 dark:text-slate-400">{{ part.quantity }}</td>
-                              <td class="p-2 text-right text-slate-600 dark:text-slate-400">{{ formatCurrency(part.unitPrice || 0) }}</td>
-                              <td class="p-2 text-right font-bold text-slate-800 dark:text-white">{{ formatCurrency(part.amount || (part.quantity * (part.unitPrice || 0))) }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                     </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Totals and Footer -->
-    <div class="flex flex-col md:flex-row justify-between mt-12 gap-12">
-      <div class="flex-grow space-y-8">
-        <div v-if="invoice.observations">
-          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Observaciones</h4>
-          <p class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">{{ invoice.observations }}</p>
-        </div>
-        
-        <div v-if="invoice.uuid" class="pt-8 border-t border-slate-100 dark:border-slate-700 space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-loose">
-            <div class="space-y-2">
-              <p class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700 pb-1">Sello Digital del CFDI</p>
-              <p class="break-all opacity-80">{{ invoice.satSeal }}</p>
-            </div>
-            <div class="space-y-2">
-              <p class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700 pb-1">Sello del Emisor</p>
-              <p class="break-all opacity-80">{{ invoice.issuerSeal }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="w-full max-w-[280px] flex-shrink-0">
-        <div class="space-y-2.5">
-          <!-- Itemized Totals -->
-          <div class="flex justify-between text-sm">
-            <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
-            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ formatCurrency(computedSubtotal) }}</span>
-          </div>
-          
-          <div v-if="computedDiscount > 0" class="flex justify-between text-sm">
-            <span class="text-slate-500 dark:text-slate-400">Descuento</span>
-            <span class="font-semibold text-red-600 dark:text-red-400">-{{ formatCurrency(computedDiscount) }}</span>
-          </div>
-
-          <div v-for="(group, gIdx) in taxGroups" :key="gIdx" class="flex justify-between text-sm">
-            <span class="text-slate-500 dark:text-slate-400">
-              {{ group.taxType }} {{ (group.rate * 100).toFixed(0) }}% {{ group.isRetention ? '(RET)' : '(TRA)' }}
-            </span>
-            <span :class="group.isRetention ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'" class="font-semibold">
-              {{ group.isRetention ? '-' : '' }}{{ formatCurrency(group.amount) }}
-            </span>
-          </div>
-
-          <!-- Final Result -->
-          <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
-            <div class="flex flex-col items-end">
-              <span class="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-400 mb-1">Total {{ invoice.currency || 'MXN' }}</span>
-              <span class="text-3xl font-black tracking-tight text-primary-600 dark:text-primary-400">{{ formatCurrency(computedTotal) }}</span>
-            </div>
-          </div>
-        </div>
+      <!-- Fallback if no structure defined -->
+      <div v-if="!templateStructure.length" class="p-20 text-center text-slate-400">
+         <p class="text-sm font-black uppercase tracking-widest">No hay estructura de plantilla definida</p>
       </div>
     </div>
   </div>
@@ -234,97 +38,136 @@ export default {
     invoice: { type: Object, required: true }
   },
   setup(props) {
-    const formatCurrency = (amount) => {
-      return (amount || 0).toLocaleString('en-US', { 
-        style: 'currency', 
-        currency: props.invoice.currency || 'MXN' 
-      });
+    const rules = window.fiax?.rules;
+    const isExporting = Vue.ref(false);
+
+    // Dynamic component mapping
+    const bandComponents = {
+       'Header': 'BandHeader',
+       'Parties': 'BandParties',
+       'Table': 'BandTable',
+       'Totals': 'BandTotals',
+       'Legal': 'BandLegal'
     };
 
-    const formatDate = (date) => {
-      if (!date) return '—';
-      return new Date(date).toLocaleString('es-MX', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    };
-
-    const resolveLabel = (catalog, key) => {
-      if (!key) return '—';
-      const cat = window.fiax.demo_data?.catalogs?.[catalog];
-      if (!cat) return key;
-      // Handle array vs object catalogs
-      if (Array.isArray(cat)) {
-        return cat.find(i => i.id === key)?.name || key;
-      }
-      return cat[key] || key;
-    };
-
-    const resolveUnit = (code) => {
-      if (code === 'E48') return 'UdS';
-      const label = resolveLabel('ClaveUnidad', code);
-      return label === code ? 'Und' : label;
-    };
-
-    const hasAdvancedInfo = (item) => {
-      return item.informacionAduanera?.length || item.cuentaPredial;
-    };
-
-    const computedSubtotal = Vue.computed(() => {
-      return (props.invoice.lineItems || []).reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+    // Resolve template structure from rules or use a modern default
+    const templateStructure = Vue.computed(() => {
+        const custom = rules?.resolve('template.structure', []).value;
+        if (custom?.length) {
+            return custom.map(b => ({
+                component: bandComponents[b.band] || b.band,
+                config: b
+            }));
+        }
+        // Default modern layout
+        return [
+            { component: 'BandHeader', config: { style: 'classic', show_logo: true } },
+            { component: 'BandParties', config: { layout: 'side-by-side' } },
+            { component: 'BandTable', config: {} },
+            { component: 'BandTotals', config: {} },
+            { component: 'BandLegal', config: {} }
+        ];
     });
 
-    const computedDiscount = Vue.computed(() => {
-      const itemDiscounts = (props.invoice.lineItems || []).reduce((acc, item) => acc + Number(item.discount || 0), 0);
-      return itemDiscounts + Number(props.invoice.discount || 0);
+    // Global branding styles from YAML
+    const globalStyles = Vue.computed(() => {
+        const config = rules?.resolve('template.global', {}).value;
+        return {
+            '--primary-color': config.primary_color || '#3b82f6',
+            'font-family': config.font_family || 'Inter, sans-serif'
+        };
     });
 
-    const taxGroups = Vue.computed(() => {
-      const summary = {};
-      (props.invoice.lineItems || []).forEach(item => {
-        (item.taxes || []).forEach(tax => {
-          const key = `${tax.taxType}-${tax.rate}-${tax.isRetention}`;
-          if (!summary[key]) {
-            summary[key] = {
-              taxType: tax.taxType,
-              rate: tax.rate,
-              isRetention: tax.isRetention,
-              amount: 0
-            };
-          }
-          summary[key].amount += Number(tax.amount || 0);
-        });
-      });
-      return Object.values(summary);
+    // We "enrich" the invoice data for the bands (e.g. resolve issuer object)
+    const enrichedInvoice = Vue.computed(() => {
+        const state = window.fiax.state?.ensureState?.() || window.fiax.state;
+        // Bug fix: property is 'currentIssuer', not 'activeIssuer'
+        const issuer = state?.currentIssuer || {};
+        
+        // Resolve receiver: try by ID from the state's client list, fallback to embedded receiver
+        let receiver = props.invoice.receiver || {};
+        if (props.invoice.receiverId) {
+            const clients = state?.data?.clients || state?.data?.customers || [];
+            const found = clients.find(c => c.id === props.invoice.receiverId);
+            if (found) receiver = found;
+        }
+
+        return {
+            ...props.invoice,
+            issuer,
+            receiver,
+            // Re-map internal field names to match Band expectations
+            items: props.invoice.lineItems || props.invoice.items || []
+        };
     });
 
-    const computedTotal = Vue.computed(() => {
-      const taxes = taxGroups.value.reduce((acc, group) => {
-        return acc + (group.isRetention ? -group.amount : group.amount);
-      }, 0);
-      return computedSubtotal.value - computedDiscount.value + taxes;
-    });
+    const exportToPdf = async () => {
+        // Debounce/Prevent double export
+        if (isExporting.value) return;
 
-    return { formatCurrency, formatDate, resolveLabel, resolveUnit, hasAdvancedInfo, taxGroups, computedSubtotal, computedDiscount, computedTotal };
+        isExporting.value = true;
+        try {
+            // Robustness: Small buffer for async components to finish any internal rendering
+            await new Promise(r => setTimeout(r, 500));
+            
+            const area = document.getElementById('invoice-capture-area');
+            const filename = `FACTURA_${props.invoice.serie}${props.invoice.folio}.pdf`;
+            await window.fiax.pdf.generate(area, filename);
+        } finally {
+            isExporting.value = false;
+        }
+    };
+
+    return { 
+        templateStructure, 
+        globalStyles, 
+        enrichedInvoice, 
+        exportToPdf, 
+        isExporting 
+    };
+  },
+  components: {
+     // Local registration for the SFC loader to find them
+     BandHeader: Vue.defineAsyncComponent(() => window.fiax.loadModule('./components/invoice/bands/BandHeader.vue', window.fiax.loaderOptions)),
+     BandParties: Vue.defineAsyncComponent(() => window.fiax.loadModule('./components/invoice/bands/BandParties.vue', window.fiax.loaderOptions)),
+     BandTable: Vue.defineAsyncComponent(() => window.fiax.loadModule('./components/invoice/bands/BandTable.vue', window.fiax.loaderOptions)),
+     BandTotals: Vue.defineAsyncComponent(() => window.fiax.loadModule('./components/invoice/bands/BandTotals.vue', window.fiax.loaderOptions)),
+     BandLegal: Vue.defineAsyncComponent(() => window.fiax.loadModule('./components/invoice/bands/BandLegal.vue', window.fiax.loaderOptions))
   }
 }
 </script>
 
-<style scoped>
-#invoice-preview {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  -webkit-print-color-adjust: exact;
+<style>
+#invoice-capture-area {
+  --primary-color: #3b82f6;
 }
 
 @media print {
-  #invoice-preview {
+  .no-print { display: none !important; }
+}
+
+/* Custom PDF Mode Styles - Forced Contrast */
+.fiax-pdf-export-mode {
     box-shadow: none !important;
-    padding: 0 !important;
-    background: white !important;
-    max-width: 100% !important;
-  }
+    border: none !important;
+    border-radius: 0 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+}
+
+.fiax-pdf-export-mode * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+/* Ensure all text is dark in PDF even if UI is dark */
+.fiax-pdf-export-mode .text-slate-400,
+.fiax-pdf-export-mode .text-slate-500 {
+    color: #64748b !important;
+}
+
+.fiax-pdf-export-mode .text-slate-900,
+.fiax-pdf-export-mode .text-slate-800 {
+    color: #0f172a !important;
 }
 </style>
