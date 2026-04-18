@@ -25,6 +25,23 @@
         />
       </div>
 
+      <!-- Conditional Language Toggle (Enrichment) -->
+      <div v-if="exportacion !== '01' && rules.get('export_language_toggle').value" class="space-y-2 animate-in slide-in-from-right-4">
+        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Idioma del Documento</label>
+        <div class="flex items-center gap-2 p-1 bg-white/5 rounded-xl border border-white/10 h-11">
+           <button 
+             @click="idioma = 'es'"
+             :class="idioma === 'es' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'"
+             class="flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+           >Español</button>
+           <button 
+             @click="idioma = 'en'"
+             :class="idioma === 'en' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'"
+             class="flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+           >English</button>
+        </div>
+      </div>
+
       <div class="space-y-2 md:col-span-2">
         <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Observaciones / Notas en PDF</label>
         <textarea 
@@ -61,7 +78,14 @@ export default {
       set: (val) => emit('update', { observations: val })
     });
 
-    return { catalogs, exportacion, condicionesDePago, observations };
+    const idioma = Vue.computed({
+      get: () => props.invoice.idioma || 'es',
+      set: (val) => emit('update', { idioma: val })
+    });
+
+    const rules = window.fiax?.useRules('settings');
+
+    return { catalogs, exportacion, condicionesDePago, observations, idioma, rules };
   }
 }
 </script>

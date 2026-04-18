@@ -3,7 +3,10 @@
     <!-- Row 1: Issuer and Branch -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="space-y-2">
-        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Emisor</label>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          Emisor
+          <span v-if="rules.get('issuer_id').value.required" class="text-rose-500 ml-1">*</span>
+        </label>
         <select 
           :value="invoice.issuerId" 
           @change="$emit('update', { issuerId: $event.target.value })"
@@ -28,7 +31,10 @@
     <!-- Row 2: Receiver and Use of CFDI -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="space-y-2">
-        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Receptor (Cliente)</label>
+        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          {{ rules.get('receiver_id').value.visible ? rules.get('receiver_id').value.label : 'Receptor (Cliente)' }}
+          <span v-if="rules.get('receiver_id').value.required" class="text-rose-500 ml-1">*</span>
+        </label>
         <div class="relative">
           <select 
             :value="invoice.receiver?.userId" 
@@ -62,7 +68,10 @@
     </div>
 
     <!-- Receiver Summary (Visual) -->
-    <div v-if="selectedClient" class="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl flex items-center gap-4 animate-in slide-in-from-top-2">
+    <div v-if="selectedClient" class="p-4 bg-blue-500/5 border border-blue-500/20 rounded-xl flex items-center gap-4 animate-in slide-in-from-top-2 relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-2 text-[10px] font-black text-blue-500/20 uppercase tracking-widest pointer-events-none">
+        {{ rules.get('title.' + invoice.tipoDeComprobante).value || 'Receptor' }}
+      </div>
       <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-lg">
         {{ (selectedClient.companyName || selectedClient.name).charAt(0) }}
       </div>
@@ -70,6 +79,7 @@
         <p class="text-white font-bold">{{ selectedClient.companyName || selectedClient.name }}</p>
         <div class="flex gap-3 text-xs text-slate-400 mt-1">
           <span>RFC: <b class="text-slate-300">{{ selectedClient.rfc }}</b></span>
+          <span v-if="selectedClient.id_interno">ID: <b class="text-blue-400">{{ selectedClient.id_interno }}</b></span>
           <span>Regimen: <b class="text-slate-300">{{ selectedClient.taxRegime }}</b></span>
           <span>C.P.: <b class="text-slate-300">{{ selectedClient.postalCode }}</b></span>
         </div>
@@ -115,7 +125,12 @@ export default {
       }
     };
 
-    return { activeIssuerBranches, selectedClient, handleReceiverChange };
+    const _safeDefault = (val) => Vue.computed(() => ({ value: val || {}, visible: true, required: false, label: null }));
+    const rules = window.fiax?.useRules?.('labels.issuer_receiver') || {
+        get: (key, def) => _safeDefault(def)
+    };
+
+    return { activeIssuerBranches, selectedClient, handleReceiverChange, rules };
   }
 }
 </script>

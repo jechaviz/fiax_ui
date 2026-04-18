@@ -126,7 +126,8 @@ export default {
     TaxManagerModal
   },
   props: {
-    state: { type: Object, required: true }
+    state: { type: Object, required: true },
+    id: { type: String, default: null }
   },
   setup(props) {
     const isEditing = Vue.ref(false);
@@ -134,7 +135,7 @@ export default {
     const clients = Vue.computed(() => props.state.data.users.filter(u => u.type === 'Client'));
 
     const invoice = Vue.reactive({
-      id: `inv-draft-${Date.now()}`,
+      id: props.id || `inv-draft-${Date.now()}`,
       version: '4.0',
       serie: 'A',
       folio: String(Math.floor(1000 + Math.random() * 9000)),
@@ -173,6 +174,20 @@ export default {
           ]
         }
       ]
+    });
+
+    // Hydration logic for Edit Mode
+    Vue.onMounted(() => {
+        if (props.id) {
+            const found = props.state.data.invoices.find(i => i.id === props.id);
+            if (found) {
+                console.log(`[Fiax Form] Hydrating invoice: ${props.id}`);
+                isEditing.value = true;
+                Object.assign(invoice, JSON.parse(JSON.stringify(found))); // Deep copy for edit
+            } else {
+                console.warn(`[Fiax Form] Invoice not found for ID: ${props.id}`);
+            }
+        }
     });
 
     const taxManager = Vue.reactive({

@@ -11,21 +11,26 @@
     </div>
 
     <!-- Table Header (Desktop) -->
-    <div class="hidden lg:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-      <div class="col-span-2">Clave SAT / SKU</div>
-      <div class="col-span-3">Descripción / Unidad</div>
-      <div class="col-span-1 text-center">Cant.</div>
-      <div class="col-span-2 text-right">Precio Unit.</div>
-      <div class="col-span-1 text-right">Desc.</div>
-      <div class="col-span-2 text-right">Importe</div>
-      <div class="col-span-1 text-center">Acciones</div>
+    <div class="hidden lg:flex gap-x-4 px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-tighter shadow-sm border-b border-white/5 items-center">
+      <div class="w-32 flex-shrink-0">Clave SAT / SKU</div>
+      <div v-if="rules.get('columns.order_no').value.visible" class="w-20 flex-shrink-0 text-center">Pedido</div>
+      <div v-if="rules.get('columns.delivery_no').value.visible" class="w-20 flex-shrink-0 text-center">Entrega</div>
+      <div v-if="rules.get('columns.lot').value.visible" class="w-24 flex-shrink-0 text-center font-mono">Lote</div>
+      
+      <div class="flex-1 min-w-0">Descripción / Unidad</div>
+      
+      <div class="w-16 flex-shrink-0 text-center">Cant.</div>
+      <div class="w-24 flex-shrink-0 text-right">Precio Unit.</div>
+      <div class="w-20 flex-shrink-0 text-right">Desc.</div>
+      <div class="w-28 flex-shrink-0 text-right">Importe</div>
+      <div class="w-12 flex-shrink-0 text-center">Acciones</div>
     </div>
 
     <!-- Line Item Rows -->
-    <div v-for="(item, idx) in lineItems" :key="item.id" class="group relative bg-white/2 border border-white/5 rounded-2xl p-4 lg:p-1 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center hover:bg-white/5 transition-all">
+    <div v-for="(item, idx) in lineItems" :key="item.id" class="group relative bg-white/2 border border-white/5 rounded-2xl p-4 lg:p-1 space-y-4 lg:space-y-0 lg:flex lg:gap-x-4 lg:items-center lg:px-3 hover:bg-white/5 transition-all">
       
       <!-- SAT Code & SKU -->
-      <div class="col-span-2 space-y-1">
+      <div class="w-full lg:w-32 flex-shrink-0 space-y-1">
         <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Clave SAT / SKU</label>
         <input 
           v-model="item.productCode" 
@@ -40,71 +45,74 @@
         />
       </div>
 
+      <!-- Dynamic ERP Columns: Order No, Delivery No, Lot -->
+      <div v-if="rules.get('columns.order_no').value.visible" class="w-full lg:w-20 flex-shrink-0">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Pedido</label>
+        <input v-model="item.order_no" class="app-input-field w-full h-8 px-2 text-[11px] lg:text-center" placeholder="PO..." />
+      </div>
+
+      <div v-if="rules.get('columns.delivery_no').value.visible" class="w-full lg:w-20 flex-shrink-0">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Entrega</label>
+        <input v-model="item.delivery_no" class="app-input-field w-full h-8 px-2 text-[11px] lg:text-center" placeholder="DN..." />
+      </div>
+
+      <div v-if="rules.get('columns.lot').value.visible" class="w-full lg:w-24 flex-shrink-0">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Lote</label>
+        <input v-model="item.lot" class="app-input-field w-full h-8 px-2 text-[11px] lg:text-center font-mono" placeholder="Batch..." />
+      </div>
+
       <!-- Description & Unit -->
-      <div class="col-span-3 space-y-2">
+      <div class="w-full flex-1 min-w-0 space-y-2">
         <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Descripción</label>
         <div class="flex flex-col gap-1">
           <input 
             v-model="item.description" 
-            class="w-full bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-blue-500/10 font-medium"
-            placeholder="Nombre del servicio o producto..."
+            class="w-full bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-1.5 text-sm text-white focus:outline-none focus:bg-blue-500/10 font-medium truncate"
+            placeholder="Descripción..."
           />
           <div class="flex gap-2">
             <input 
               v-model="item.unitCode" 
-              class="w-20 bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-1 text-[11px] text-slate-400 font-mono focus:outline-none focus:bg-blue-500/10"
+              class="w-14 bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-2 py-1 text-[10px] text-slate-400 font-mono focus:outline-none"
               placeholder="E48"
             />
             <input 
               v-model="item.unit" 
-              class="flex-1 bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-1 text-[11px] text-slate-400 focus:outline-none focus:bg-blue-500/10"
-              placeholder="Servicio"
+              class="flex-1 bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-2 py-1 text-[10px] text-slate-400 focus:outline-none"
+              placeholder="Unidad"
             />
           </div>
         </div>
       </div>
 
-      <!-- Quantity -->
-      <div class="col-span-1">
-        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Cant.</label>
-        <input 
-          type="number" 
-          v-model.number="item.quantity" 
-          class="w-full bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-2 text-sm text-white text-center focus:outline-none focus:bg-blue-500/10 font-bold"
-        />
+      <!-- Quantities & Prices -->
+      <div class="w-full lg:w-16 flex-shrink-0">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Cantidad</label>
+        <input type="number" v-model="item.quantity" class="app-input-field w-full lg:text-center px-2 font-mono h-8 text-[13px]" placeholder="1" />
       </div>
 
-      <!-- Unit Price -->
-      <div class="col-span-2">
-        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Precio Unit.</label>
-        <input 
-          type="number" 
-          v-model.number="item.unitPrice" 
-          class="w-full bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-2 text-sm text-white text-right focus:outline-none focus:bg-blue-500/10 font-mono"
-        />
+      <div class="w-full lg:w-24 flex-shrink-0 relative">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Precio Unitario</label>
+        <span class="absolute left-2 lg:left-0 top-1/2 -translate-y-1/2 lg:top-1.5 text-slate-500 text-sm opacity-50 lg:hidden">$</span>
+        <input type="number" v-model="item.unitPrice" class="app-input-field w-full pl-6 lg:pl-2 px-2 lg:text-right font-mono h-8 text-[13px]" placeholder="0.00" />
       </div>
 
-      <!-- Discount -->
-      <div class="col-span-1">
-        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1 text-right">Desc.</label>
-        <input 
-          type="number" 
-          v-model.number="item.discount" 
-          class="w-full bg-white/5 border border-white/10 lg:border-none rounded-lg lg:rounded-none px-3 py-2 text-sm text-red-400 text-right focus:outline-none focus:bg-red-500/10 font-mono"
-          placeholder="0.00"
-        />
+      <div class="w-full lg:w-20 flex-shrink-0 relative">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1">Descuento</label>
+        <span class="absolute left-2 lg:left-0 top-1/2 -translate-y-1/2 lg:top-1.5 text-slate-500 text-sm opacity-50 lg:hidden">$</span>
+        <input type="number" v-model="item.discount" class="app-input-field w-full pl-6 lg:pl-2 px-2 lg:text-right font-mono text-emerald-400 h-8 text-[13px]" placeholder="0.00" />
       </div>
 
-      <!-- Total Amount Column -->
-      <div class="col-span-2">
-        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1 text-right">Importe</label>
-        <div class="text-right px-3 py-2 text-sm font-black text-white">
-          {{ state.formatCurrency(calculateItemTotal(item), currency) }}
-        </div>
+      <div class="w-full lg:w-28 flex-shrink-0 text-right bg-white/5 lg:bg-transparent p-3 lg:p-0 rounded-lg lg:rounded-none">
+        <label class="lg:hidden block text-[10px] font-bold text-slate-500 uppercase mb-1 text-left">Importe Neto</label>
+        <p class="font-bold text-lg lg:text-base font-mono text-white tracking-tight">{{ state.formatCurrency(calculateItemTotal(item), currency) }}</p>
+        <p v-if="getTotalFederalTaxes(item) > 0" class="text-[10px] text-slate-400 font-mono mt-0.5">
+          + Impuestos
+        </p>
       </div>
 
-      <!-- Row Actions -->
-      <div class="col-span-1 flex items-center justify-center gap-2">
+      <!-- Actions -->
+      <div class="w-full lg:w-12 flex-shrink-0 flex justify-end lg:justify-center gap-2 pt-2 border-t border-white/10 lg:border-0 lg:pt-0">
         <button 
           @click="expanded[item.id] = !expanded[item.id]"
           class="p-2 text-slate-500 hover:text-white transition-colors"
@@ -203,7 +211,12 @@ export default {
         emit('open-tax-manager', index);
     };
 
-    return { catalogs, expanded, calculateItemTotal, getTotalFederalTaxes, addLineItem, removeLineItem, openTaxManager };
+    const _safeDefault = (val) => Vue.computed(() => ({ value: val || {}, visible: false, required: false, label: null }));
+    const rules = window.fiax?.useRules?.('form.line_items') || {
+        get: (key, def) => _safeDefault(def)
+    };
+
+    return { catalogs, rules, expanded, calculateItemTotal, getTotalFederalTaxes, addLineItem, removeLineItem, openTaxManager };
   }
 }
 </script>
