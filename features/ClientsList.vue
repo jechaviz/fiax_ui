@@ -18,6 +18,14 @@
         @new-record="createNew"
       />
     </div>
+
+    <!-- Client Edit/Create Modal -->
+    <ClientsFormModal
+      v-if="modal.show"
+      :client="modal.client"
+      @close="modal.show = false"
+      @save="onSaveClient"
+    />
   </div>
 </template>
 
@@ -27,7 +35,17 @@ export default {
   props: {
     state: { type: Object, required: true }
   },
+  components: {
+    ClientsFormModal: Vue.defineAsyncComponent(() => 
+      window.fiax.loadModule('/components/ClientsFormModal.vue', window.fiax.loaderOptions)
+    )
+  },
   setup(props) {
+    const modal = Vue.reactive({
+      show: false,
+      client: null
+    });
+
     const clients = Vue.computed(() => {
       return (props.state.data.users || []).filter(u => u.type === 'Client');
     });
@@ -44,17 +62,23 @@ export default {
     };
 
     function handleRowAction(payload) {
-      if(payload.action === 'open-record' || payload.action === 'row-click') {
-        const router = window.fiax?._router;
-        if (router) router.push('/clients/' + payload.row.id);
+      if(payload.action === 'open-record' || payload.action === 'row-click' || payload.action === 'edit') {
+        modal.client = JSON.parse(JSON.stringify(payload.row));
+        modal.show = true;
       }
     }
 
     function createNew() {
-      alert('Nuevo Cliente (Próximamente)');
+      modal.client = null;
+      modal.show = true;
     }
 
-    return { clients, tableI18n, handleRowAction, createNew };
+    function onSaveClient(updated) {
+      props.state.saveClient(updated);
+      modal.show = false;
+    }
+
+    return { clients, tableI18n, handleRowAction, createNew, modal, onSaveClient };
   }
 }
 </script>

@@ -27,7 +27,7 @@
               <p class="app-stat-label mb-1">Emisores Activos</p>
               <h3 class="app-stat-value">{{ state.data.issuers?.length || 0 }}</h3>
             </div>
-            <div class="text-3xl text-indigo-500/20"><i class="fa-solid fa-building-memo"></i></div>
+            <div class="text-3xl text-indigo-500/30 dark:text-indigo-400/20"><i class="fa-solid fa-building-columns"></i></div>
         </div>
       </div>
       <div class="app-stat-card border-l-4 border-l-emerald-500">
@@ -36,7 +36,7 @@
               <p class="app-stat-label mb-1">Certificados Válidos</p>
               <h3 class="app-stat-value">{{ state.data.issuers?.length || 0 }}</h3>
             </div>
-            <div class="text-3xl text-emerald-500/20"><i class="fa-solid fa-shield-check"></i></div>
+            <div class="text-3xl text-emerald-500/30 dark:text-emerald-400/20"><i class="fa-solid fa-shield-check"></i></div>
         </div>
       </div>
       <div class="app-stat-card border-l-4 border-l-amber-500">
@@ -45,7 +45,7 @@
               <p class="app-stat-label mb-1">Timbres Consumidos</p>
               <h3 class="app-stat-value">1,248</h3>
             </div>
-            <div class="text-3xl text-amber-500/20"><i class="fa-solid fa-bolt"></i></div>
+            <div class="text-3xl text-amber-500/30 dark:text-amber-400/20"><i class="fa-solid fa-bolt"></i></div>
         </div>
       </div>
     </div>
@@ -106,10 +106,10 @@
               </td>
               <td class="text-right">
                 <div class="flex justify-end gap-1">
-                  <button @click="openIssuerModal(issuer)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-primary-glow hover:text-primary transition-colors" title="Editar">
+                  <button @click="openIssuerModal(issuer)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-primary-glow hover:text-primary transition-colors" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  <button v-if="state.currentIssuer?.id !== issuer.id" @click="state.switchIssuer(issuer.id)" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors" title="Activar">
+                  <button v-if="state.currentIssuer?.id !== issuer.id" @click="state.switchIssuer(issuer.id)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors" title="Activar">
                     <i class="fa-solid fa-power-off"></i>
                   </button>
                 </div>

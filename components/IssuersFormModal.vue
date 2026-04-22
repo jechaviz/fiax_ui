@@ -46,9 +46,9 @@
               <div class="fiax-input-group">
                 <label>Régimen Fiscal</label>
                 <select v-model="form.taxRegime" class="fiax-field">
-                  <option value="601">601 - General de Ley Personas Morales</option>
-                  <option value="612">612 - Personas Físicas con Actividades Emp.</option>
-                  <option value="626">626 - RESICO</option>
+                  <option v-for="(name, code) in catalogs.taxRegimes" :key="code" :value="code">
+                    {{ code }} - {{ name }}
+                  </option>
                 </select>
               </div>
               <div class="fiax-input-group md:col-span-2">
@@ -71,16 +71,36 @@
               </button>
             </div>
 
-            <div class="grid grid-cols-1 gap-3">
-              <div v-for="(branch, idx) in form.branches" :key="branch.id" class="fiax-sub-card group">
-                <div class="flex items-center gap-4 flex-grow">
-                  <div class="text-[10px] font-black text-slate-500 bg-white/5 w-6 h-6 rounded flex items-center justify-center">{{ idx + 1 }}</div>
-                  <input type="text" v-model="branch.name" placeholder="Nombre (ej. CDMX Central)" class="bg-transparent border-none outline-none text-sm font-bold flex-grow">
-                  <input type="text" v-model="branch.postalCode" placeholder="CP (ej. 06500)" class="bg-transparent border-none outline-none text-xs font-mono text-slate-400 w-24">
+            <div class="space-y-4">
+              <div v-for="(branch, idx) in form.branches" :key="branch.id" class="p-6 bg-white/2 border border-white/5 rounded-2xl space-y-4 group relative">
+                <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="text-[10px] font-black text-slate-500 bg-white/5 w-6 h-6 rounded flex items-center justify-center">{{ idx + 1 }}</div>
+                    <input type="text" v-model="branch.name" placeholder="Nombre de la Sucursal (ej. Matriz)" class="bg-transparent border-none outline-none text-sm font-bold text-white w-64">
+                  </div>
+                  <button @click="removeBranch(idx)" class="p-2 text-rose-500/50 hover:text-rose-500 transition-all">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                  </button>
                 </div>
-                <button @click="removeBranch(idx)" class="opacity-0 group-hover:opacity-100 p-2 text-rose-500/50 hover:text-rose-500 transition-all">
-                  <i class="fa-solid fa-trash-can text-xs"></i>
-                </button>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="fiax-input-group md:col-span-2">
+                    <label class="text-[9px]">Calle y Número</label>
+                    <input type="text" v-model="branch.street" placeholder="Av. Principal 123" class="fiax-field-sm">
+                  </div>
+                  <div class="fiax-input-group">
+                    <label class="text-[9px]">Código Postal</label>
+                    <input type="text" v-model="branch.postalCode" placeholder="06500" class="fiax-field-sm font-mono">
+                  </div>
+                  <div class="fiax-input-group md:col-span-2">
+                    <label class="text-[9px]">Colonia / Municipio</label>
+                    <input type="text" v-model="branch.location" placeholder="Col. Centro, Cuauhtémoc" class="fiax-field-sm">
+                  </div>
+                  <div class="fiax-input-group">
+                    <label class="text-[9px]">País</label>
+                    <input type="text" v-model="branch.country" placeholder="MEX" class="fiax-field-sm font-bold text-primary">
+                  </div>
+                </div>
               </div>
               <div v-if="!form.branches.length" class="text-center py-6 border-2 border-dashed border-white/5 rounded-2xl text-slate-500 text-xs italic">
                 No hay sucursales configuradas. Añade una para poder expedir facturas.
@@ -128,7 +148,7 @@
                 <label>Contraseña del Certificado</label>
                 <div class="relative">
                   <input type="password" v-model="form.csdPassword" class="fiax-field pr-12">
-                  <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-slate-600"></i>
+                  <i class="fa-solid fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600"></i>
                 </div>
               </div>
             </div>
@@ -239,8 +259,17 @@ export default {
       }
     });
 
+    const catalogs = Vue.computed(() => window.fiax.demo_data?.catalogs || { taxRegimes: {} });
+
     const addBranch = () => {
-      form.branches.push({ id: `br-${Date.now()}`, name: '', postalCode: '' });
+      form.branches.push({ 
+          id: `br-${Date.now()}`, 
+          name: '', 
+          street: '',
+          postalCode: '', 
+          location: '',
+          country: 'MEX' 
+      });
     };
 
     const removeBranch = (idx) => {
@@ -262,7 +291,7 @@ export default {
       emit('save', { ...form });
     };
 
-    return { isNew, activeTab, form, yamlError, addBranch, removeBranch, handleFileChange, save };
+    return { isNew, activeTab, form, yamlError, addBranch, removeBranch, handleFileChange, save, catalogs };
   }
 }
 </script>
@@ -301,6 +330,16 @@ export default {
   transition: all 0.2s ease;
 }
 .fiax-sub-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+
+.fiax-field-sm {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #fff;
+  transition: all 0.2s ease; outline: none; width: 100%;
+}
+.fiax-field-sm:focus {
+  border-color: var(--app-primary);
+  background: rgba(var(--app-primary-rgb), 0.05);
+}
 
 .fiax-file-stub {
   position: relative; display: flex; align-items: center; gap: 12px;
