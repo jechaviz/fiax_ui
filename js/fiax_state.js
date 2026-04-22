@@ -52,11 +52,24 @@
                 activeTheme: 'dark', // Default
                 notifications: [],
                 loading: false,
+                onboardingOpen: false,
                 
                 // Session
                 currentIssuer: null,
                 activeRules: computed(() => FIAX.rules?._state.activeRules),
                 rulesLoading: computed(() => FIAX.rules?._state.loading),
+
+                // Core Setup Status
+                isSetupComplete: computed(() => {
+                    const issuers = vueState.data.issuers || [];
+                    if (issuers.length === 0) return false;
+                    const main = issuers[0];
+                    const hasBasic = main.rfc && main.name && main.taxRegime;
+                    const hasBranch = main.branches?.length > 0 && main.branches[0].postalCode;
+                    const hasCert = main.csdCertName && main.csdPassword;
+                    const hasPAC = main.pacUser && main.pacApiKey;
+                    return Boolean(hasBasic && hasBranch && hasCert && hasPAC);
+                }),
                 
                 // Helpers
                 t(key) {
@@ -95,6 +108,17 @@
                     }
                     if (this.currentIssuer?.id === issuer.id) {
                         this.currentIssuer = { ...this.data.issuers[idx] || issuer };
+                    }
+                },
+
+                // Client Actions
+                saveClient(client) {
+                    const users = this.demoMode ? this.demoData.users : [];
+                    const idx = users.findIndex(u => u.id === client.id);
+                    if (idx !== -1) {
+                        users[idx] = { ...users[idx], ...client };
+                    } else {
+                        users.push({ ...client, type: 'Client' });
                     }
                 },
 

@@ -37,6 +37,17 @@
             <div class="topbar-ai-pulse"></div>
           </button>
 
+          <!-- Onboarding Blinker -->
+          <button
+            v-if="!state.isSetupComplete"
+            class="topbar-setup-btn"
+            @click="state.onboardingOpen = true"
+            title="Configuración Pendiente"
+          >
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span class="setup-pulse"></span>
+          </button>
+
           <!-- Theme Toggle -->
           <button 
             class="topbar-icon-btn" 
@@ -59,11 +70,18 @@
         </div>
       </header>
 
-      <!-- Main content with page transition -->
       <main class="app-pane-body">
         <slot />
       </main>
     </div>
+
+    <!-- Onboarding Wizard -->
+    <OnboardingWizard
+      v-if="state.onboardingOpen"
+      :is-open="state.onboardingOpen"
+      :state="state"
+      @close="state.onboardingOpen = false"
+    />
   </div>
 </template>
 
@@ -83,6 +101,9 @@ export default {
     AIChatPanel: Vue.defineAsyncComponent(() =>
       window.fiax.loadModule('app/workspace/AIChatPanel.vue', window.fiax.loaderOptions)
     ),
+    OnboardingWizard: Vue.defineAsyncComponent(() =>
+      window.fiax.loadModule('/components/OnboardingWizard.vue', window.fiax.loaderOptions)
+    ),
   }
 }
 </script>
@@ -92,6 +113,25 @@ export default {
 /* ── Page transition ────────────────────────── */
 .page-fade-enter-active { animation: fadeSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .page-fade-leave-active { animation: fadeSlideOut 0.16s ease forwards; }
-@keyframes fadeSlideIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 @keyframes fadeSlideOut { from { opacity:1; } to { opacity:0; } }
+
+/* ── Setup Blinker ────────────────────────── */
+.topbar-setup-btn {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);
+  color: #f59e0b; display: flex; align-items: center; justify-content: center;
+  position: relative; cursor: pointer; transition: all 0.3s ease;
+}
+.topbar-setup-btn:hover { background: rgba(245, 158, 11, 0.2); transform: scale(1.1); }
+
+.setup-pulse {
+  position: absolute; inset: -2px; border-radius: 12px;
+  border: 2px solid #f59e0b; opacity: 0;
+  animation: setup-blink 2s infinite;
+}
+
+@keyframes setup-blink {
+  0%   { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
 </style>

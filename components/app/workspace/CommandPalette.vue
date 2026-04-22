@@ -109,6 +109,7 @@ export default {
       actions.unshift(
         { key: 'new-invoice', label: 'Nueva Factura', description: 'Crear un nuevo CFDI de Ingreso', icon: 'fa-solid fa-plus', href: '/cfdi/ingresos/new' },
         { key: 'new-client', label: 'Nuevo Cliente', description: 'Registrar un cliente en el catálogo', icon: 'fa-solid fa-user-plus', href: '/clients/new' },
+        { key: 'onboarding', label: 'Asistente de Configuración', description: 'Configurar RFC, Sellos y PAC', icon: 'fa-solid fa-wand-magic-sparkles', action: () => { this.state.onboardingOpen = true; } },
       );
 
       return actions;
