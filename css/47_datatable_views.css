@@ -291,6 +291,38 @@
   gap: 10px;
 }
 
+.app-button-primary,
+.app-button-secondary {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.app-button-primary {
+  background: var(--app-primary);
+  color: #fff;
+  border-color: var(--app-primary);
+}
+
+.app-button-secondary {
+  background: var(--app-bg-hover);
+  color: var(--app-text-primary);
+  border-color: var(--app-border);
+}
+
+.app-button-primary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 @media (max-width: 720px) {
   .app-generic-form-grid {
     grid-template-columns: 1fr;
