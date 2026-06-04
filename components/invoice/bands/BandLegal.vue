@@ -36,7 +36,10 @@ export default {
     const rules = window.fiax?.rules;
     
     // Resolve dynamic mentions from rule engine enriched context
-    const menciones = rules.resolve('context_mennciones', []).value;
+    const menciones = rules?.resolve('context_menciones', []).value
+      || rules?.resolve('context_mentions', []).value
+      || rules?.resolve('context_mennciones', []).value
+      || [];
     const mencion = menciones && menciones.length ? menciones[0] : null;
 
     return { rules, mencion };

@@ -81,24 +81,7 @@ export default {
     // We "enrich" the invoice data for the bands (e.g. resolve issuer object)
     const enrichedInvoice = Vue.computed(() => {
         const state = window.fiax.state?.ensureState?.() || window.fiax.state;
-        // Bug fix: property is 'currentIssuer', not 'activeIssuer'
-        const issuer = state?.currentIssuer || {};
-        
-        // Resolve receiver: try by ID from the state's client list, fallback to embedded receiver
-        let receiver = props.invoice.receiver || {};
-        if (props.invoice.receiverId) {
-            const clients = state?.data?.clients || state?.data?.customers || [];
-            const found = clients.find(c => c.id === props.invoice.receiverId);
-            if (found) receiver = found;
-        }
-
-        return {
-            ...props.invoice,
-            issuer,
-            receiver,
-            // Re-map internal field names to match Band expectations
-            items: props.invoice.lineItems || props.invoice.items || []
-        };
+        return window.fiax?.cfdiModel?.normalizeInvoice?.(props.invoice, state) || props.invoice;
     });
 
     const exportToPdf = async () => {

@@ -76,8 +76,9 @@
             if (typeof pattern !== 'string') return pattern;
             
             // Safe Language Resolver Hierarchy
-            const activeLanguage = FIAX.state?.activeInvoice?.idioma 
-                                || FIAX.state?.activeIssuer?.default_lang 
+            const state = FIAX.state?.ensureState?.();
+            const activeLanguage = state?.activeInvoice?.idioma 
+                                || state?.currentIssuer?.default_lang 
                                 || 'es';
 
             const langIndex = activeLanguage === 'en' ? 2 : 1;
@@ -94,8 +95,9 @@
             const result = this.resolve(`global.maps.${mapName}.${key}`);
             if (result.rulesExist && result.value) {
                 if (typeof result.value === 'object' && result.value !== null) {
-                    const activeLanguage = FIAX.state?.activeInvoice?.idioma 
-                                        || FIAX.state?.activeIssuer?.default_lang 
+                    const state = FIAX.state?.ensureState?.();
+                    const activeLanguage = state?.activeInvoice?.idioma 
+                                        || state?.currentIssuer?.default_lang 
                                         || 'es';
                     return result.value[activeLanguage] || result.value['es'] || key;
                 }

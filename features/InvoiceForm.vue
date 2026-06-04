@@ -132,7 +132,11 @@ export default {
   setup(props) {
     const isEditing = Vue.ref(false);
     const saveStatus = Vue.ref('');
-    const clients = Vue.computed(() => props.state.data.users.filter(u => u.type === 'Client'));
+    const clients = Vue.computed(() => [
+      ...((props.state.data.users || []).filter(u => u.type === 'Client')),
+      ...(props.state.data.clients || []),
+      ...(props.state.data.customers || [])
+    ]);
 
     const invoice = Vue.reactive({
       id: props.id || `inv-draft-${Date.now()}`,
@@ -221,7 +225,8 @@ export default {
     };
 
     const handleStamp = () => {
-        const validation = window.fiax.logic.cfdi.validate(invoice);
+        const normalized = window.fiax?.cfdiModel?.normalizeInvoice?.(invoice, props.state) || invoice;
+        const validation = window.fiax.logic.cfdi.validate(normalized);
         if (!validation.isValid) {
             const firstErrField = Object.keys(validation.errors)[0];
             const firstErr = validation.errors[firstErrField][0];
