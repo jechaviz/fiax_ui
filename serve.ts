@@ -1,9 +1,26 @@
 
 import { serve } from "bun";
-import { join } from "path";
+import { isAbsolute, relative, resolve, sep } from "path";
 
 const PORT = 8888; // Fiax port
-const ROOT = import.meta.dir;
+const ROOT = resolve(import.meta.dir);
+
+function resolveStaticPath(pathname: string) {
+  let decodedPath: string;
+  try {
+    decodedPath = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+
+  const target = resolve(ROOT, `.${decodedPath.replace(/\\/g, "/")}`);
+  const rel = relative(ROOT, target);
+  if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
+    return null;
+  }
+
+  return target;
+}
 
 console.log(`Starting Fiax Bun server in ${ROOT}...`);
 
@@ -20,7 +37,11 @@ serve({
       });
     }
 
-    const filePath = join(ROOT, path);
+    const filePath = resolveStaticPath(path);
+    if (!filePath) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
     const file = Bun.file(filePath);
 
     if (await file.exists()) {
@@ -28,7 +49,7 @@ serve({
     }
 
     // Fallback for SPA routing
-    const indexFile = Bun.file(join(ROOT, "index.html"));
+    const indexFile = Bun.file(resolve(ROOT, "index.html"));
     return new Response(indexFile);
   },
 });
