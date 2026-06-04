@@ -8,12 +8,20 @@
 
     FIAX.admin = {
         async wipeDatabase() {
+            if (FIAX.config?.allow_admin_wipe !== true) {
+                console.error('[Fiax Admin] Database wipe is disabled. Set config.allow_admin_wipe = true only in controlled maintenance sessions.');
+                return;
+            }
+
             if (!FIAX.pb) {
                 console.error('[Fiax Admin] PocketBase client not found.');
                 return;
             }
 
-            if (!confirm('DANGER: This will delete ALL invoices, clients, and products from the LIVE database. Proceed?')) {
+            const phrase = 'WIPE LIVE DATA';
+            const confirmation = prompt(`DANGER: This deletes invoices, clients, and products from the LIVE database.\nType "${phrase}" to continue.`);
+            if (confirmation !== phrase) {
+                console.warn('[Fiax Admin] Wipe cancelled.');
                 return;
             }
 

@@ -4,12 +4,16 @@
     const FIAX = window.fiax || (window.fiax = {});
     const AI = FIAX.ai || (FIAX.ai = {});
 
-    // Use a default key or allow setting it in state
-    let apiKey = localStorage.getItem('fiax-ai-key') || '';
+    const legacyKey = localStorage.getItem('fiax-ai-key');
+    if (legacyKey) localStorage.removeItem('fiax-ai-key');
+
+    // Keep user-provided AI keys only for the browser session.
+    let apiKey = sessionStorage.getItem('fiax-ai-key') || legacyKey || '';
 
     AI.setApiKey = (key) => {
         apiKey = key;
-        localStorage.setItem('fiax-ai-key', key);
+        if (key) sessionStorage.setItem('fiax-ai-key', key);
+        else sessionStorage.removeItem('fiax-ai-key');
     };
 
     AI.hasKey = () => !!apiKey;
