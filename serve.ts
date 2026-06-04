@@ -1,26 +1,10 @@
 
 import { serve } from "bun";
-import { isAbsolute, relative, resolve, sep } from "path";
+import { resolve } from "path";
+import { resolveStaticPath } from "./serve_paths";
 
 const PORT = 8888; // Fiax port
 const ROOT = resolve(import.meta.dir);
-
-function resolveStaticPath(pathname: string) {
-  let decodedPath: string;
-  try {
-    decodedPath = decodeURIComponent(pathname);
-  } catch {
-    return null;
-  }
-
-  const target = resolve(ROOT, `.${decodedPath.replace(/\\/g, "/")}`);
-  const rel = relative(ROOT, target);
-  if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
-    return null;
-  }
-
-  return target;
-}
 
 console.log(`Starting Fiax Bun server in ${ROOT}...`);
 
@@ -37,7 +21,7 @@ serve({
       });
     }
 
-    const filePath = resolveStaticPath(path);
+    const filePath = resolveStaticPath(ROOT, path);
     if (!filePath) {
       return new Response("Forbidden", { status: 403 });
     }
