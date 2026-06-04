@@ -216,15 +216,22 @@ export default {
         taxManager.isOpen = false;
     };
 
-    const handleSaveDraft = () => {
+    const handleSaveDraft = async () => {
         saveStatus.value = 'saving';
+        const result = await props.state.saveInvoice({ ...invoice, status: 'Borrador' });
+        if (result?.ok === false) {
+            saveStatus.value = 'error';
+            alert(result.message || 'No se pudo guardar el borrador.');
+            return;
+        }
+        if (result?.record) Object.assign(invoice, result.record);
         setTimeout(() => {
             saveStatus.value = 'saved';
             setTimeout(() => saveStatus.value = '', 3000);
-        }, 1500);
+        }, 300);
     };
 
-    const handleStamp = () => {
+    const handleStamp = async () => {
         const normalized = window.fiax?.cfdiModel?.normalizeInvoice?.(invoice, props.state) || invoice;
         const validation = window.fiax.logic.cfdi.validate(normalized);
         if (!validation.isValid) {
@@ -233,7 +240,17 @@ export default {
             alert(`⚠️ Error de Validación SAT [${firstErrField}]:\n${firstErr}`);
             return;
         }
-        alert('🚀 ¡Comprobante timbrado exitosamente con el PAC!');
+
+        await props.state.saveInvoice({ ...normalized, status: normalized.status || 'Borrador' });
+        const result = await window.fiax.api.stampInvoice(normalized);
+        if (!result.ok) {
+            alert(result.message || 'No se pudo timbrar: falta backend fiscal o PAC configurado.');
+            return;
+        }
+        const stamped = result.data?.invoice || result.record || normalized;
+        Object.assign(invoice, stamped);
+        await props.state.saveInvoice(stamped);
+        alert('Comprobante timbrado correctamente.');
     };
 
     return { 

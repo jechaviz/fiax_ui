@@ -115,7 +115,7 @@ export default {
       window.print();
     }
 
-    function handleClone() {
+    async function handleClone() {
       if (!invoice.value) return;
       if (confirm('¿Deseas crear una copia de esta factura como borrador?')) {
         const newId = `inv-${Date.now()}`;
@@ -129,21 +129,34 @@ export default {
           satSeal: null,
           issuerSeal: null
         };
-        props.state.data.invoices.push(draft);
+        await props.state.saveInvoice(draft);
         router.push('/cfdi/ingresos/new'); // or edit with id
       }
     }
 
-    function handleSend() {
-      alert(`Simulando envío de correo a ${invoice.value.receiver?.name}...`);
+    async function handleSend() {
+      if (!invoice.value) return;
+      const recipient = invoice.value.receiver?.email || invoice.value.email || '';
+      const result = await window.fiax.api.sendInvoice(invoice.value, recipient);
+      if (!result.ok) {
+        alert(result.message || 'No se pudo enviar: falta backend fiscal o servicio de correo configurado.');
+        return;
+      }
+      alert('Factura enviada correctamente.');
     }
 
-    function handleCancel() {
+    async function handleCancel() {
       const motive = prompt('Por favor, indica el motivo de cancelación (SAT):', '02 - Comprobante emitido con errores sin relación');
       if (motive) {
-        invoice.value.status = 'Cancelado';
-        invoice.value.cancellationDetails = { motive };
-        alert('Solicitud de cancelación enviada al PAC satisfactoriamente.');
+        const result = await window.fiax.api.cancelInvoice(invoice.value, motive);
+        if (!result.ok) {
+          alert(result.message || 'No se pudo cancelar: falta backend fiscal o PAC configurado.');
+          return;
+        }
+        const canceled = result.data?.invoice || { ...invoice.value, status: 'Cancelado', cancellationDetails: { motive } };
+        invoice.value = canceled;
+        await props.state.saveInvoice(canceled);
+        alert('Factura cancelada correctamente.');
       }
     }
 

@@ -3,9 +3,10 @@
     <div class="flex items-center gap-3">
        <div v-if="saveStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 animate-in fade-in duration-300">
           <div v-if="saveStatus === 'saving'" class="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          <i v-else-if="saveStatus === 'error'" class="fa-solid fa-circle-exclamation text-red-400"></i>
           <i v-else class="fa-solid fa-check-circle text-green-400"></i>
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            {{ saveStatus === 'saving' ? 'Guardando Borrador...' : 'Borrador Guardado' }}
+            {{ saveStatus === 'saving' ? 'Guardando Borrador...' : saveStatus === 'error' ? 'Error al Guardar' : 'Borrador Guardado' }}
           </span>
        </div>
     </div>

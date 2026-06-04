@@ -37,11 +37,12 @@
                 // Environment
                 demoMode: savedDemoMode,
                 demoData: demoData,
+                liveData: { ...DEFAULT_SCHEMA },
                 
                 // Core Data
                 pb: PB,
                 user: null, // Populated below
-                get data() { return this.demoMode ? this.demoData : { issuers: [], invoices: [], products: [] }; },
+                get data() { return this.demoMode ? this.demoData : this.liveData; },
                 i18n: I18N,
                 constants: FIAX.constants || {},
                 config: FIAX.config || { navigation: [] },
@@ -98,28 +99,76 @@
                       }).format(new Date(dateStr));
                 },
 
-                // Issuer Actions
-                saveIssuer(issuer) {
-                    const idx = this.data.issuers.findIndex(i => i.id === issuer.id);
-                    if (idx !== -1) {
-                        this.data.issuers[idx] = { ...this.data.issuers[idx], ...issuer };
+                persistDemoData() {
+                    if (!this.demoMode) return;
+                    localStorage.setItem('fiax_demo_data', JSON.stringify(this.demoData));
+                },
+
+                upsertLocal(collection, record) {
+                    const target = this.demoMode ? this.demoData : this.liveData;
+                    const normalizedCollection = collection === 'customers' ? 'clients' : collection;
+                    const saveInto = (list, value) => {
+                        const idx = list.findIndex(item => item.id === value.id);
+                        if (idx >= 0) list[idx] = { ...list[idx], ...value };
+                        else list.push(value);
+                    };
+
+                    if (normalizedCollection === 'clients') {
+                        const client = { ...record, type: 'Client' };
+                        if (!Array.isArray(target.users)) target.users = [];
+                        if (!Array.isArray(target.clients)) target.clients = [];
+                        saveInto(target.users, client);
+                        saveInto(target.clients, client);
                     } else {
-                        this.data.issuers.push({ ...issuer });
+                        if (!Array.isArray(target[normalizedCollection])) target[normalizedCollection] = [];
+                        saveInto(target[normalizedCollection], record);
                     }
-                    if (this.currentIssuer?.id === issuer.id) {
-                        this.currentIssuer = { ...this.data.issuers[idx] || issuer };
+
+                    this.persistDemoData();
+                },
+
+                async hydrateLiveData() {
+                    if (this.demoMode || !FIAX.api) return;
+                    this.loading = true;
+                    try {
+                        const [issuers, invoices, clients, products] = await Promise.all([
+                            FIAX.api.getIssuers(),
+                            FIAX.api.getInvoices(),
+                            FIAX.api.getClients(),
+                            FIAX.api.getProducts()
+                        ]);
+                        this.liveData.issuers = issuers || [];
+                        this.liveData.invoices = invoices || [];
+                        this.liveData.clients = clients || [];
+                        this.liveData.users = (clients || []).map(client => ({ ...client, type: 'Client' }));
+                        this.liveData.products = products || [];
+                        if (this.liveData.issuers?.[0]) await this.switchIssuer(this.liveData.issuers[0].id);
+                    } finally {
+                        this.loading = false;
                     }
                 },
 
-                // Client Actions
-                saveClient(client) {
-                    const users = this.demoMode ? this.demoData.users : [];
-                    const idx = users.findIndex(u => u.id === client.id);
-                    if (idx !== -1) {
-                        users[idx] = { ...users[idx], ...client };
-                    } else {
-                        users.push({ ...client, type: 'Client' });
+                // Issuer Actions
+                async saveIssuer(issuer) {
+                    this.upsertLocal('issuers', issuer);
+                    if (this.currentIssuer?.id === issuer.id) {
+                        this.currentIssuer = { ...this.currentIssuer, ...issuer };
                     }
+                    if (!this.demoMode) await FIAX.api?.saveRecord?.('issuers', issuer);
+                },
+
+                // Client Actions
+                async saveClient(client) {
+                    const normalized = { ...client, type: 'Client' };
+                    this.upsertLocal('clients', normalized);
+                    if (!this.demoMode) await FIAX.api?.saveRecord?.('clients', normalized);
+                },
+
+                async saveInvoice(invoice) {
+                    const normalized = FIAX.cfdiModel?.normalizeInvoice?.(invoice, this) || invoice;
+                    this.upsertLocal('invoices', normalized);
+                    if (this.demoMode) return { ok: true, record: normalized, localOnly: true };
+                    return FIAX.api?.saveInvoice?.(normalized);
                 },
 
                 async switchIssuer(id) {
@@ -193,6 +242,7 @@
             if (issuers?.[0]) {
                 vueState.switchIssuer(issuers[0].id);
             }
+            if (!vueState.demoMode) vueState.hydrateLiveData();
 
             return vueState;
         }
