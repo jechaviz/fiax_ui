@@ -7,18 +7,18 @@
     <i class="fa-solid fa-file-circle-exclamation text-5xl text-slate-700"></i>
     <h2 class="text-xl font-bold text-white">Comprobante no encontrado</h2>
     <p class="text-slate-500">El CFDI solicitado no existe en la base de datos local.</p>
-    <router-link to="/cfdi/ingresos" class="inline-block px-6 py-2 bg-white/5 rounded-xl text-white font-bold">Volver al listado</router-link>
+    <router-link :to="basePath" class="inline-block px-6 py-2 bg-white/5 rounded-xl text-white font-bold">Volver al listado</router-link>
   </div>
 
   <div v-else class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
     <!-- Action Bar -->
     <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
       <div class="flex items-center gap-4">
-        <router-link to="/cfdi/ingresos" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white transition-all">
+        <router-link :to="basePath" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white transition-all">
           <i class="fa-solid fa-arrow-left"></i>
         </router-link>
         <div>
-          <h1 class="text-3xl font-black tracking-tighter text-white">Factura #{{ invoice.serie }}{{ invoice.folio }}</h1>
+          <h1 class="text-3xl font-black tracking-tighter text-white">{{ documentLabel }} #{{ invoice.serie }}{{ invoice.folio }}</h1>
           <div class="flex items-center gap-2 mt-1">
              <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest" :class="statusColor">
                 {{ invoice.status }}
@@ -38,7 +38,7 @@
         </button>
         
         <template v-if="invoice.status === 'Vigente'">
-          <router-link :to="`/cfdi/ingresos/${invoice.id}/edit`" class="app-button-primary py-2 px-6 flex items-center gap-2">
+          <router-link :to="editPath" class="app-button-primary py-2 px-6 flex items-center gap-2">
             <i class="fa-solid fa-pencil"></i> Editar
           </router-link>
           <button @click="handleSend" class="px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all font-bold text-sm flex items-center gap-2">
@@ -89,7 +89,8 @@ export default {
     InvoicePreview
   },
   props: {
-    state: { type: Object, required: true }
+    state: { type: Object, required: true },
+    type: { type: String, default: '' }
   },
   setup(props) {
     const route = VueRouter.useRoute();
@@ -110,6 +111,24 @@ export default {
         ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
         : 'bg-red-500/10 text-red-400 border border-red-500/20';
     });
+    const currentType = Vue.computed(() => {
+      if (invoice.value?.tipoDeComprobante) return invoice.value.tipoDeComprobante;
+      if (props.type) return props.type;
+      if (route.path.includes('/egresos')) return 'E';
+      if (route.path.includes('/traslado')) return 'T';
+      return 'I';
+    });
+    const basePath = Vue.computed(() => {
+      if (currentType.value === 'E') return '/cfdi/egresos';
+      if (currentType.value === 'T') return '/cfdi/traslado';
+      return '/cfdi/ingresos';
+    });
+    const documentLabel = Vue.computed(() => {
+      if (currentType.value === 'E') return 'Nota de Credito';
+      if (currentType.value === 'T') return 'Carta Porte';
+      return 'Factura';
+    });
+    const editPath = Vue.computed(() => invoice.value ? `${basePath.value}/${invoice.value.id}/edit` : basePath.value);
 
     function printInvoice() {
       window.print();
@@ -130,7 +149,7 @@ export default {
           issuerSeal: null
         };
         await props.state.saveInvoice(draft);
-        router.push('/cfdi/ingresos/new'); // or edit with id
+        router.push(`${basePath.value}/${newId}/edit`);
       }
     }
 
@@ -164,6 +183,9 @@ export default {
       loading, 
       invoice, 
       statusColor, 
+      basePath,
+      documentLabel,
+      editPath,
       printInvoice, 
       handleClone, 
       handleSend, 

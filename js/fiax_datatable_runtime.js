@@ -33,6 +33,8 @@
     cancelado: 'app-status--cancelado',
     pendiente: 'app-status--pendiente',
     borrador: 'app-status--borrador',
+    approved: 'app-status--vigente',
+    invoiced: 'app-status--vigente',
     paid: 'app-status--vigente',
     overdue: 'app-status--pendiente',
     pending: 'app-status--pendiente',
@@ -83,7 +85,7 @@
         return this.editableKeys.includes(column.key);
       },
       storageKeys() {
-        return { views: storageKey(`datatable.views.${this.surfaceKey}`) };
+        return { views: storageKey(`datatable.views.v2.${this.surfaceKey}`) };
       },
       defaultViewConfig() {
         return {
@@ -148,7 +150,9 @@
         this.isDirty = true;
       },
       columnStyle(column) {
-        return column.width ? { width: `${column.width}px`, minWidth: `${column.width}px` } : {};
+        if (!column.width) return {};
+        const width = typeof column.width === 'number' ? `${column.width}px` : String(column.width);
+        return { width, minWidth: width };
       },
       handleSearch(value) {
         this.internalFilter = value;
@@ -207,9 +211,11 @@
       },
       displayCellValue(row, column) {
         const value = this.resolveCellValue(row, column);
-        if (column.key === 'total' || column.key === 'amount' || column.key === 'rate') return this.formatMoney(value);
+        if (column.numeric || column.type === 'currency' || column.key === 'total' || column.key === 'amount' || column.key === 'rate') {
+          return column.key === 'progress' ? `${Number(value || 0)}%` : this.formatMoney(value);
+        }
         if (Array.isArray(value)) return value.join(', ');
-        if (column.key === 'date' || column.key === 'issuedDateIso' || column.key === 'dueDateIso' || column.key === 'paymentDate') {
+        if (column.type === 'date' || column.key === 'date' || column.key === 'issuedDateIso' || column.key === 'dueDateIso' || column.key === 'paymentDate' || column.key === 'startDate' || column.key === 'endDate') {
           return formatDateDisplay(value);
         }
         if (column.key === 'tipoDeComprobante') {
@@ -241,7 +247,7 @@
         this.editingCell = { rowId: row.id, colKey: column.key };
       },
       startRowInlineEdit(row) {
-        const preferredOrder = ['billTo', 'contactEmail', 'paymentTerm', 'issuedDateIso', 'dueDateIso', 'owner'];
+        const preferredOrder = ['clientName', 'name', 'title', 'description', 'employeeName', 'amount', 'total', 'date', 'billTo', 'contactEmail', 'paymentTerm', 'issuedDateIso', 'dueDateIso', 'owner'];
         const preferredEditable = preferredOrder
           .map((key) => this.visibleColumns.find((column) => column.key === key && this.isColumnEditable(column)))
           .find(Boolean);

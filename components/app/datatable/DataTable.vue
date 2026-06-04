@@ -48,9 +48,13 @@
         <DataTableKanban
           v-if="internalViewMode === 'kanban'"
           :buckets="kanbanBuckets"
+          :columns="visibleColumns"
           :format-money="formatMoney"
+          :display-cell-value="displayCellValue"
+          :status-class="statusClass"
           @move-record="moveKanbanRecord"
           @open-context="openContextMenu"
+          @open-row="emitRowAction('open-record', $event)"
         />
 
         <div v-else-if="internalViewMode === 'table'" class="app-record-table-wrap">
@@ -136,16 +140,24 @@
           v-else-if="internalViewMode === 'dashboard'"
           :rows="pagedRows"
           :buckets="kanbanBuckets"
+          :columns="visibleColumns"
           :format-money="formatMoney"
+          :display-cell-value="displayCellValue"
           :i18n="i18n"
+          @open-row="emitRowAction('open-record', $event)"
         />
 
         <DataTableCards
           v-else-if="internalViewMode === 'cards'"
           :rows="pagedRows"
+          :columns="visibleColumns"
           :format-money="formatMoney"
+          :display-cell-value="displayCellValue"
+          :status-class="statusClass"
           @open-context="openContextMenu"
+          @open-row="emitRowAction('open-record', $event)"
           @edit-row="startRowInlineEdit"
+          @native-row="emitRowAction('open-native', $event)"
         />
       </template>
 
@@ -280,7 +292,11 @@ export default {
       return walk(this.filterGroup);
     },
     filteredRows() {
-      const searchKeys = ['id', 'folio', 'clientName', 'clientRfc', 'companyName', 'description', 'category', 'tipoDeComprobante', 'status', 'date', 'employeeName'];
+      const searchKeys = Array.from(new Set([
+        'id', 'folio', 'clientName', 'clientRfc', 'companyName', 'description', 'category',
+        'tipoDeComprobante', 'status', 'date', 'employeeName', 'title', 'name', 'invoiceFolio',
+        ...this.visibleColumns.map((column) => column.key),
+      ]));
       return filterRows({
         rows: this.localRows,
         query: this.internalFilter,

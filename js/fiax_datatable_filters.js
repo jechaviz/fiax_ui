@@ -25,6 +25,8 @@
     if (normalized === 'borrador')  return i18n.filterBorrador  || 'Borrador';
     // English fallback values
     if (normalized === 'paid')      return i18n.filterPaid      || 'Vigente';
+    if (normalized === 'approved')  return i18n.filterApproved  || 'Aprobado';
+    if (normalized === 'invoiced')  return i18n.filterInvoiced  || 'Facturado';
     if (normalized === 'overdue')   return i18n.filterOverdue   || 'Pendiente';
     if (normalized === 'pending')   return i18n.filterPending   || 'Pendiente';
     return i18n.filterDraft || 'Borrador';

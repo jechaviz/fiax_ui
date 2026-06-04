@@ -49,6 +49,11 @@ export default {
     }
 
     function createNew() {
+      const router = window.fiax?._router;
+      if (router) {
+        router.push('/products/new');
+        return;
+      }
       alert('Nuevo Producto (Próximamente)');
     }
 

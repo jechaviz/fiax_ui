@@ -135,6 +135,7 @@
       "css/31_shell_cards.css",
       "css/34_command_palette.css",
       "css/38_shell_dashboard.css",
+      "css/47_datatable_views.css",
     ];
 
     cssParts.forEach((path) => {
@@ -262,7 +263,11 @@
         { path: '/cfdi/traslado', component: lm('/features/InvoicesList.vue'), props: { type: 'T' } },
         { path: '/cfdi/pagos', component: lm('/features/PaymentsList.vue') },
         { path: '/cfdi/nomina', component: lm('/features/PayrollList.vue') },
-        { path: '/cfdi/ingresos/new', component: lm('/features/InvoiceForm.vue') },
+        { path: '/cfdi/ingresos/new', component: lm('/features/InvoiceForm.vue'), props: { type: 'I' } },
+        { path: '/cfdi/egresos/new', component: lm('/features/InvoiceForm.vue'), props: { type: 'E' } },
+        { path: '/cfdi/traslado/new', component: lm('/features/InvoiceForm.vue'), props: { type: 'T' } },
+        { path: '/cfdi/pagos/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'paymentReceipts' }, meta: { surfaceKey: 'paymentReceipts' } },
+        { path: '/cfdi/nomina/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'payrollReceipts' }, meta: { surfaceKey: 'payrollReceipts' } },
         { path: '/cfdi/ingresos/:id', component: lm('/features/InvoiceDetail.vue'), props: { type: 'I' } },
         { path: '/cfdi/ingresos/:id/edit', component: lm('/features/InvoiceForm.vue'), props: true },
         
@@ -278,23 +283,32 @@
         // Catálogos
         { path: '/clients', component: lm('/features/ClientsList.vue') },
         { path: '/products', component: lm('/features/ProductsList.vue') },
+        { path: '/products/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'products' }, meta: { surfaceKey: 'products' } },
+        { path: '/products/:id', component: lm('/features/Placeholder.vue') },
         { path: '/employees', component: lm('/features/Placeholder.vue') },
 
         // CRM / Ventas
         { path: '/leads', component: lm('/features/LeadsList.vue') },
+        { path: '/leads/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'leads' }, meta: { surfaceKey: 'leads' } },
         { path: '/leads/:id', component: lm('/features/Placeholder.vue') },
         { path: '/estimates', component: lm('/features/EstimatesList.vue') },
+        { path: '/estimates/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'estimates' }, meta: { surfaceKey: 'estimates' } },
         { path: '/estimates/:id', component: lm('/features/Placeholder.vue') },
         { path: '/contracts', component: lm('/features/ContractsList.vue') },
+        { path: '/contracts/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'contracts' }, meta: { surfaceKey: 'contracts' } },
         { path: '/contracts/:id', component: lm('/features/Placeholder.vue') },
 
         // Operaciones
         { path: '/projects', component: lm('/features/ProjectsList.vue') },
+        { path: '/projects/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'projects' }, meta: { surfaceKey: 'projects' } },
         { path: '/projects/:id', component: lm('/features/Placeholder.vue') },
 
         // Finanzas
         { path: '/expenses', component: lm('/features/ExpensesList.vue') },
+        { path: '/expenses/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'expenses' }, meta: { surfaceKey: 'expenses' } },
+        { path: '/expenses/:id', component: lm('/features/Placeholder.vue') },
         { path: '/transactions', component: lm('/features/TransactionsList.vue') },
+        { path: '/transactions/new', component: lm('/features/GenericRecordForm.vue'), props: { surfaceKey: 'transactions' }, meta: { surfaceKey: 'transactions' } },
         { path: '/transactions/:id', component: lm('/features/Placeholder.vue') },
 
         // Admin

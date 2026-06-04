@@ -41,10 +41,19 @@ export default {
     });
 
     function handleRowAction(payload) {
+      if(payload.action === 'open-record' || payload.action === 'row-click') {
+        const router = window.fiax?._router;
+        if (router) router.push('/expenses/' + payload.row.id);
+      }
       console.log('Row Action', payload);
     }
 
     function createNew() {
+      const router = window.fiax?._router;
+      if (router) {
+        router.push('/expenses/new');
+        return;
+      }
       alert('Nuevo Gasto (Próximamente)');
     }
 

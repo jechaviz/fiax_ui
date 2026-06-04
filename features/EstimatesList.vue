@@ -40,7 +40,7 @@ export default {
 
     function createNew() {
       const router = window.fiax?._router;
-      if (router) router.push('/cfdi/ingresos/new');
+      if (router) router.push('/estimates/new');
     }
 
     function handleRowAction(payload) {

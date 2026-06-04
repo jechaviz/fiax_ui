@@ -14,6 +14,7 @@
                 _v: '1.0', 
                 users: [], issuers: [], invoices: [], products: [], 
                 paymentReceipts: [], payrollReceipts: [],
+                leads: [], estimates: [], contracts: [], projects: [], expenses: [], transactions: [],
                 dashboard: { stats: {}, recentActivity: [] } 
             };
             const DATA = { ...DEFAULT_SCHEMA, ...(FIAX.demo_data || {}) };

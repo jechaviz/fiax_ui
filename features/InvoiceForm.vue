@@ -4,11 +4,11 @@
     <!-- Header -->
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="flex items-center gap-4">
-        <router-link to="/cfdi/ingresos" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white transition-all">
+        <router-link :to="backPath" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-white/10 hover:text-white transition-all">
           <i class="fa-solid fa-arrow-left"></i>
         </router-link>
         <div>
-          <h1 class="text-3xl font-black tracking-tighter text-white">{{ isEditing ? 'Editar' : 'Nueva' }} Factura</h1>
+          <h1 class="text-3xl font-black tracking-tighter text-white">{{ formTitle }}</h1>
           <p class="text-slate-400 text-sm mt-1">CFDI v4.0 • Estandarizado • Neural-Glass Interface</p>
         </div>
       </div>
@@ -63,7 +63,7 @@
         <InvoiceActions 
           :save-status="saveStatus" 
           :is-editing="isEditing" 
-          @cancel="$router.push('/cfdi/ingresos')"
+          @cancel="$router.push(backPath)"
           @draft="handleSaveDraft"
           @stamp="handleStamp"
         />
@@ -127,11 +127,27 @@ export default {
   },
   props: {
     state: { type: Object, required: true },
-    id: { type: String, default: null }
+    id: { type: String, default: null },
+    type: { type: String, default: '' }
   },
   setup(props) {
+    const route = VueRouter.useRoute();
+    const resolvedType = Vue.computed(() => {
+      if (props.type) return props.type;
+      if (route.path.includes('/egresos')) return 'E';
+      if (route.path.includes('/traslado')) return 'T';
+      return 'I';
+    });
+    const formMeta = Vue.computed(() => {
+      if (resolvedType.value === 'E') return { label: 'Nota de Credito', backPath: '/cfdi/egresos', serie: 'NC' };
+      if (resolvedType.value === 'T') return { label: 'Carta Porte', backPath: '/cfdi/traslado', serie: 'T' };
+      return { label: 'Factura', backPath: '/cfdi/ingresos', serie: 'A' };
+    });
+    const recordId = Vue.computed(() => props.id || route.params.id || null);
     const isEditing = Vue.ref(false);
     const saveStatus = Vue.ref('');
+    const backPath = Vue.computed(() => formMeta.value.backPath);
+    const formTitle = Vue.computed(() => `${isEditing.value ? 'Editar' : 'Nueva'} ${formMeta.value.label}`);
     const clients = Vue.computed(() => [
       ...((props.state.data.users || []).filter(u => u.type === 'Client')),
       ...(props.state.data.clients || []),
@@ -139,13 +155,13 @@ export default {
     ]);
 
     const invoice = Vue.reactive({
-      id: props.id || `inv-draft-${Date.now()}`,
+      id: recordId.value || `inv-draft-${Date.now()}`,
       version: '4.0',
-      serie: 'A',
+      serie: formMeta.value.serie,
       folio: String(Math.floor(1000 + Math.random() * 9000)),
       date: new Date().toISOString(),
       status: 'Vigente',
-      tipoDeComprobante: 'I',
+      tipoDeComprobante: resolvedType.value,
       exportacion: '01',
       issuerId: props.state.data.issuers?.[0]?.id || '',
       branchId: props.state.data.issuers?.[0]?.branches?.[0]?.id || '',
@@ -182,14 +198,14 @@ export default {
 
     // Hydration logic for Edit Mode
     Vue.onMounted(() => {
-        if (props.id) {
-            const found = props.state.data.invoices.find(i => i.id === props.id);
+        if (recordId.value) {
+            const found = props.state.data.invoices.find(i => i.id === recordId.value);
             if (found) {
-                console.log(`[Fiax Form] Hydrating invoice: ${props.id}`);
+                console.log(`[Fiax Form] Hydrating invoice: ${recordId.value}`);
                 isEditing.value = true;
                 Object.assign(invoice, JSON.parse(JSON.stringify(found))); // Deep copy for edit
             } else {
-                console.warn(`[Fiax Form] Invoice not found for ID: ${props.id}`);
+                console.warn(`[Fiax Form] Invoice not found for ID: ${recordId.value}`);
             }
         }
     });
@@ -260,6 +276,8 @@ export default {
       clients, 
       taxManager,
       totals,
+      backPath,
+      formTitle,
       updateInvoice,
       updateInvoiceTop,
       onTaxesSaved,
