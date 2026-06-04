@@ -1,0 +1,180 @@
+input.app-input-field,
+select.app-input-field,
+textarea.app-input-field {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: rgba(5, 12, 26, 0.82);
+  color: var(--app-text-primary);
+  font: inherit;
+  font-size: 13px;
+  padding: 0 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+
+select.app-input-field {
+  appearance: none;
+  padding-right: 34px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--app-text-secondary) 50%),
+    linear-gradient(135deg, var(--app-text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+textarea.app-input-field {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+input.app-input-field::placeholder,
+textarea.app-input-field::placeholder {
+  color: var(--app-text-muted);
+}
+
+input.app-input-field:focus,
+select.app-input-field:focus,
+textarea.app-input-field:focus {
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 3px var(--app-primary-glow);
+}
+
+input.app-input-field[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input.app-input-field[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.72;
+}
+
+.fiax-invoice-details {
+  overflow: visible;
+}
+
+.fiax-invoice-details > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.fiax-invoice-details label,
+.fiax-line-items label {
+  display: block;
+  color: var(--app-text-secondary);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.fiax-line-head {
+  display: none !important;
+}
+
+.fiax-line-row {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 14px;
+}
+
+.fiax-line-cell {
+  min-width: 0;
+}
+
+.fiax-line-items input,
+.fiax-line-items select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: rgba(5, 12, 26, 0.82);
+  color: var(--app-text-primary);
+  font: inherit;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
+.fiax-line-items input:focus,
+.fiax-line-items select:focus {
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 3px var(--app-primary-glow);
+}
+
+.fiax-line-description {
+  grid-column: span 2;
+}
+
+.fiax-line-description > div {
+  display: grid;
+  gap: 8px;
+}
+
+.fiax-line-description > div > div {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.fiax-line-total {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.fiax-line-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.fiax-line-actions button {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--app-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fiax-line-actions button:hover {
+  background: var(--app-primary-glow);
+  color: var(--app-primary);
+}
+
+@media (max-width: 1180px) {
+  .fiax-invoice-details > div,
+  .fiax-line-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .fiax-invoice-details > div,
+  .fiax-line-row {
+    grid-template-columns: 1fr;
+  }
+
+  .fiax-line-description {
+    grid-column: auto;
+  }
+}

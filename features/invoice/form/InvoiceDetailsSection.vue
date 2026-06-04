@@ -1,5 +1,5 @@
 <template>
-  <div class="app-surface rounded-2xl border border-white/5 shadow-2xl overflow-hidden p-6">
+  <div class="app-surface fiax-invoice-details rounded-2xl border border-white/5 shadow-2xl overflow-hidden p-6">
     <h3 class="text-white font-bold tracking-tight mb-6 flex items-center gap-2">
       <i class="fa-solid fa-circle-info text-blue-400"></i> Datos del Comprobante
     </h3>
