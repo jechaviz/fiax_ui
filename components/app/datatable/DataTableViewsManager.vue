@@ -1,7 +1,7 @@
 <template>
   <div class="app-table-views" @keydown.esc="open = false">
     <button class="app-table-view-trigger" type="button" @click="open = !open">
-      <span>{{ activeViewName }}</span>
+      <span :title="activeViewName">{{ activeViewName }}</span>
       <span v-if="isDirty" class="app-table-view-dirty"></span>
       <i class="fa-solid fa-chevron-down"></i>
     </button>
@@ -16,7 +16,7 @@
         @click="selectView(view.id)"
       >
         <span>{{ view.name }}</span>
-        <small v-if="view.isDefault">Default</small>
+        <small v-if="view.isDefault">{{ i18n.defaultBadge || 'Base' }}</small>
       </button>
       <button class="app-table-view-item manage" type="button" @click="manageViews">
         <i class="fa-solid fa-floppy-disk"></i>
