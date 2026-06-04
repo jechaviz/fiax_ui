@@ -1,7 +1,7 @@
 
 import { serve } from "bun";
 import { resolve } from "path";
-import { resolveStaticPath } from "./serve_paths";
+import { resolveStaticPath, shouldServeSpaFallback } from "./serve_paths";
 
 const PORT = 8888; // Fiax port
 const ROOT = resolve(import.meta.dir);
@@ -30,6 +30,10 @@ serve({
 
     if (await file.exists()) {
       return new Response(file);
+    }
+
+    if (!shouldServeSpaFallback(path)) {
+      return new Response("Not found", { status: 404 });
     }
 
     // Fallback for SPA routing

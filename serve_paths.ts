@@ -17,3 +17,7 @@ export function resolveStaticPath(root: string, pathname: string) {
 
   return target;
 }
+
+export function shouldServeSpaFallback(pathname: string) {
+  return !/\.[A-Za-z0-9]+$/.test(pathname);
+}

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { resolve } from "path";
-import { resolveStaticPath } from "../serve_paths";
+import { resolveStaticPath, shouldServeSpaFallback } from "../serve_paths";
 
 describe("resolveStaticPath", () => {
   const root = resolve("c:/git/customers/yo/fiax");
@@ -18,5 +18,11 @@ describe("resolveStaticPath", () => {
 
   test("rejects malformed escape sequences", () => {
     expect(resolveStaticPath(root, "/%E0%A4%A")).toBeNull();
+  });
+
+  test("does not serve SPA fallback for missing asset-like paths", () => {
+    expect(shouldServeSpaFallback("/cfdi/ingresos")).toBe(true);
+    expect(shouldServeSpaFallback("/Windows/win.ini")).toBe(false);
+    expect(shouldServeSpaFallback("/missing/app.js")).toBe(false);
   });
 });
