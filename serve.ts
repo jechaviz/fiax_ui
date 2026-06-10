@@ -2,8 +2,9 @@
 import { serve } from "bun";
 import { resolve } from "path";
 import { resolveStaticPath, shouldServeSpaFallback } from "./serve_paths";
+import { resolveServerPort } from "./server_config";
 
-const PORT = 8888; // Fiax port
+const PORT = resolveServerPort(Bun.env.PORT);
 const ROOT = resolve(import.meta.dir);
 
 console.log(`Starting Fiax Bun server in ${ROOT}...`);
