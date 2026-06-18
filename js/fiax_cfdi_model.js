@@ -46,10 +46,10 @@
 
     function findReceiver(state, invoice) {
         const embedded = invoice.receiver || {};
-        const id = invoice.receiverId || embedded.userId || embedded.id;
-        return listClients(state?.data || {}).find((item) => item.id === id)
-            || embedded
-            || {};
+        const id = invoice.receiverId || invoice.receptorId || embedded.userId || embedded.id;
+        const fromState = listClients(state?.data || {}).find((item) => String(item.id) === String(id));
+        // Merge: state provides base fields; embedded (from detail endpoint) wins for CFDI-specific fields
+        return fromState ? { ...fromState, ...embedded } : embedded;
     }
 
     function normalizeParty(raw = {}, branch = {}) {

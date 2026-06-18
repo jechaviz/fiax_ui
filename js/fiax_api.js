@@ -152,6 +152,24 @@
             return null;
         },
 
+        async downloadXml(id, filename) {
+            const token = localStorage.getItem('fiax_token');
+            const res = await fetch(`/fiax/api/facturas/${id}/xml`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            });
+            if (!res.ok) {
+                const msg = await res.json().catch(() => ({}));
+                throw new Error(msg.message || 'XML no disponible.');
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || `CFDI_${id}.xml`;
+            a.click();
+            URL.revokeObjectURL(url);
+        },
+
         async saveRecord(collection, data) {
             const state = FIAX.state.ensureState();
             const col = normalizeCollection(collection);

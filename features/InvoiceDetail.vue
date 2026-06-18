@@ -30,8 +30,12 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
+        <button @click="downloadXml" :disabled="downloadingXml" class="app-button-secondary py-2 px-4 flex items-center gap-2">
+          <i v-if="downloadingXml" class="fa-solid fa-circle-notch fa-spin"></i>
+          <i v-else class="fa-solid fa-file-code"></i> XML
+        </button>
         <button @click="printInvoice" class="app-button-secondary py-2 px-4 flex items-center gap-2">
-          <i class="fa-solid fa-print"></i> Imprimir / PDF
+          <i class="fa-solid fa-file-pdf"></i> PDF
         </button>
         <button @click="handleClone" class="app-button-ghost py-2 px-4 flex items-center gap-2 border border-white/5">
           <i class="fa-regular fa-copy"></i> Clonar
@@ -97,6 +101,7 @@ export default {
     const router = VueRouter.useRouter();
     const loading = Vue.ref(true);
     const invoice = Vue.ref(null);
+    const downloadingXml = Vue.ref(false);
 
     function findInvoice(list) {
       return (list || []).find(inv => String(inv.id) === String(route.params.id)) || null;
@@ -148,6 +153,19 @@ export default {
     });
     const editPath = Vue.computed(() => invoice.value ? `${basePath.value}/${invoice.value.id}/edit` : basePath.value);
 
+    async function downloadXml() {
+      if (!invoice.value || downloadingXml.value) return;
+      downloadingXml.value = true;
+      try {
+        const filename = `CFDI_${invoice.value.serie}${invoice.value.folio}_${invoice.value.uuid || invoice.value.id}.xml`;
+        await window.fiax.api.downloadXml(invoice.value.id, filename);
+      } catch (e) {
+        alert(e.message || 'No se pudo descargar el XML.');
+      } finally {
+        downloadingXml.value = false;
+      }
+    }
+
     function printInvoice() {
       window.print();
     }
@@ -197,17 +215,19 @@ export default {
       }
     }
 
-    return { 
-      loading, 
-      invoice, 
-      statusColor, 
+    return {
+      loading,
+      invoice,
+      statusColor,
       basePath,
       documentLabel,
       editPath,
-      printInvoice, 
-      handleClone, 
-      handleSend, 
-      handleCancel 
+      downloadXml,
+      downloadingXml,
+      printInvoice,
+      handleClone,
+      handleSend,
+      handleCancel
     };
   }
 }

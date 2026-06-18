@@ -13,6 +13,7 @@
         :i18n="tableI18n"
         view-mode="table"
         surface-key="invoices"
+        :show-downloads="true"
         @row-action="handleRowAction"
         @new-record="createNew"
       />
@@ -69,10 +70,27 @@ export default {
       else window.location.href = target;
     }
 
-    function handleRowAction(payload) {
-      if (payload.action !== 'open-record' && payload.action !== 'row-click') return;
-      const router = window.fiax?._router;
-      if (router) router.push(currentList.value.basePath + payload.row.id);
+    async function handleRowAction(payload) {
+      const { action, row } = payload;
+      if (action === 'open-record' || action === 'row-click' || action === 'open') {
+        const router = window.fiax?._router;
+        if (router) router.push(currentList.value.basePath + row.id);
+        return;
+      }
+      if (action === 'download-xml') {
+        try {
+          const filename = `CFDI_${row.serie}${row.folio}_${row.uuid || row.id}.xml`;
+          await window.fiax.api.downloadXml(row.id, filename);
+        } catch (e) {
+          alert(e.message || 'No se pudo descargar el XML.');
+        }
+        return;
+      }
+      if (action === 'download-pdf') {
+        const router = window.fiax?._router;
+        if (router) router.push(currentList.value.basePath + row.id + '?print=1');
+        return;
+      }
     }
 
     return { title, typeLabel, filteredInvoices, tableI18n, createNew, handleRowAction };

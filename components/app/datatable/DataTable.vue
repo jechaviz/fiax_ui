@@ -181,7 +181,7 @@
 
     <DataTableSettingsModal :open="showSettings" :columns="columns" :filter-group="filterGroup" :sorting="sorting" :group-by-key="groupByKey" :i18n="i18n" @close="showSettings = false" @apply="applyTableSettings" />
     <DataTableSaveViewModal :open="showSaveView" :current-view="activeView" :i18n="i18n" @close="showSaveView = false" @save-as-new="saveAsNewView" @update-current="updateCurrentView" @delete-current="deleteCurrentView" />
-    <DataTableContextMenu :open="contextMenu.open" :x="contextMenu.x" :y="contextMenu.y" :i18n="i18n" @action="handleContextAction" />
+    <DataTableContextMenu :open="contextMenu.open" :x="contextMenu.x" :y="contextMenu.y" :i18n="i18n" :show-downloads="showDownloads" @action="handleContextAction" />
     <input ref="importInput" class="app-hidden-import" type="file" accept=".csv,text/csv" @change="importCsv" />
   </div>
 </template>
@@ -243,6 +243,7 @@ export default {
     currentPage: { type: Number, default: 1 },
     surfaceKey: { type: String, default: 'records' },
     editableKeys: { type: Array, default: () => [] },
+    showDownloads: { type: Boolean, default: false },
   },
   data() {
     const schemaColumns = createColumnSchema(this.i18n || {}, this.surfaceKey).map((column) => ({
