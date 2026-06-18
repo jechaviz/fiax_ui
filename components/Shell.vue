@@ -70,6 +70,28 @@
         </div>
       </header>
 
+      <!-- Backend error banner -->
+      <div
+        v-if="state.backendError"
+        class="flex items-center gap-3 px-5 py-3 bg-red-500/10 border-b border-red-500/20 text-red-400 text-sm"
+      >
+        <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+        <span class="flex-1">
+          <b>Backend no disponible:</b> {{ state.backendError }}
+        </span>
+        <button
+          @click="state.retryBackend()"
+          :disabled="state.loading"
+          class="px-3 py-1 rounded-lg bg-red-500/15 hover:bg-red-500/25 font-bold text-xs transition-all disabled:opacity-50"
+        >
+          <i v-if="state.loading" class="fa-solid fa-circle-notch fa-spin mr-1"></i>
+          Reintentar
+        </button>
+        <button @click="state.backendError = null" class="opacity-50 hover:opacity-100 transition-opacity ml-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
       <main class="app-pane-body">
         <slot />
       </main>

@@ -57,6 +57,7 @@
                 activeTheme: 'dark', // Default
                 notifications: [],
                 loading: false,
+                backendError: null,
                 onboardingOpen: false,
                 
                 // Session
@@ -134,6 +135,7 @@
                 async hydrateLiveData() {
                     if (this.demoMode || !FIAX.api) return;
                     this.loading = true;
+                    this.backendError = null;
                     try {
                         const [issuers, invoices, clients, products] = await Promise.all([
                             FIAX.api.getIssuers(),
@@ -147,9 +149,16 @@
                         this.liveData.users = (clients || []).map(client => ({ ...client, type: 'Client' }));
                         this.liveData.products = products || [];
                         if (this.liveData.issuers?.[0]) await this.switchIssuer(this.liveData.issuers[0].id);
+                    } catch (err) {
+                        this.backendError = err?.message || 'No se puede conectar al servidor backend.';
                     } finally {
                         this.loading = false;
                     }
+                },
+
+                async retryBackend() {
+                    this.backendError = null;
+                    await this.hydrateLiveData();
                 },
 
                 // Issuer Actions

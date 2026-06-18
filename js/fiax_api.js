@@ -121,7 +121,8 @@
                 const endpoint = ODOO_ENDPOINTS[col];
                 if (!endpoint) return [];
                 const result = await odooGet(endpoint);
-                return result.ok ? (result.records || []) : [];
+                if (!result.ok) throw new Error(result.message || 'Error al conectar con el servidor backend.');
+                return result.records || [];
             }
 
             // PocketBase
