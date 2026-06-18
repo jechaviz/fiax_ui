@@ -98,16 +98,33 @@ export default {
     const loading = Vue.ref(true);
     const invoice = Vue.ref(null);
 
+    function findInvoice(list) {
+      return (list || []).find(inv => String(inv.id) === String(route.params.id)) || null;
+    }
+
+    // React when state hydrates (covers list→detail navigation)
+    Vue.watch(
+      () => props.state.data.invoices,
+      (list) => {
+        const found = findInvoice(list);
+        if (found) { invoice.value = found; loading.value = false; }
+      },
+      { immediate: true }
+    );
+
     Vue.onMounted(async () => {
-      // Fetch invoice from state
-      const id = route.params.id;
-      invoice.value = props.state.data.invoices.find(inv => inv.id === id);
+      if (invoice.value) { loading.value = false; return; }
+      // Direct URL navigation: state not hydrated yet, fetch directly
+      try {
+        const all = await (window.fiax?.api?.getInvoices?.() || Promise.resolve([]));
+        invoice.value = findInvoice(all);
+      } catch (e) { /* ignore */ }
       loading.value = false;
     });
 
     const statusColor = Vue.computed(() => {
       if (!invoice.value) return '';
-      return invoice.value.status === 'Vigente' 
+      return invoice.value.status === 'Timbrado' || invoice.value.status === 'Vigente'
         ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
         : 'bg-red-500/10 text-red-400 border border-red-500/20';
     });
