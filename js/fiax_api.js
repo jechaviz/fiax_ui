@@ -139,6 +139,18 @@
         async getClients()  { return this.getList('clients'); },
         async getProducts() { return this.getList('products'); },
 
+        async getInvoiceDetail(id) {
+            const state = FIAX.state.ensureState();
+            if (state.demoMode) {
+                return (state.data.invoices || []).find(i => String(i.id) === String(id)) || null;
+            }
+            if (isOdooMode(state)) {
+                const res = await odooGet(`/fiax/api/facturas/${id}`);
+                return res.ok ? res.record : null;
+            }
+            return null;
+        },
+
         async saveRecord(collection, data) {
             const state = FIAX.state.ensureState();
             const col = normalizeCollection(collection);

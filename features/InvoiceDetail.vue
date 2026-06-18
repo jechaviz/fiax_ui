@@ -113,12 +113,13 @@ export default {
     );
 
     Vue.onMounted(async () => {
-      if (invoice.value) { loading.value = false; return; }
-      // Direct URL navigation: state not hydrated yet, fetch directly
+      // Always fetch full detail from proxy (has issuer, receiver, lineItems)
       try {
-        const all = await (window.fiax?.api?.getInvoices?.() || Promise.resolve([]));
-        invoice.value = findInvoice(all);
+        const full = await window.fiax?.api?.getInvoiceDetail?.(route.params.id);
+        if (full) { invoice.value = full; loading.value = false; return; }
       } catch (e) { /* ignore */ }
+      // Fallback: use state list entry if detail fetch failed
+      if (invoice.value) { loading.value = false; return; }
       loading.value = false;
     });
 
