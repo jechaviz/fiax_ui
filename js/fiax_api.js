@@ -1,6 +1,9 @@
 /**
  * FIAX Unified Data Access Layer (DAL)
- * Switched between Demo Mode (Local) and Production Mode (PocketBase).
+ * Three modes:
+ *   1. Demo   — localStorage, no backend
+ *   2. Odoo   — fiax1 Odoo addon JSON API (/fiax/api/*)
+ *   3. Live   — PocketBase (legacy, kept for standalone use)
  */
 (() => {
     const FIAX = window.fiax || (window.fiax = {});
@@ -30,7 +33,49 @@
         return state.demoData[collection];
     }
 
+    // --- Odoo mode helpers ---
+
+    function isOdooMode(state) {
+        return !state.demoMode && (window.__FIAX_ODOO_MODE__ || FIAX.config?.odoo_mode);
+    }
+
+    async function odooFetch(path, options = {}) {
+        const token = localStorage.getItem('fiax_token');
+        try {
+            const res = await fetch(path, {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                    ...(options.headers || {}),
+                },
+                ...options,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.ok === false) {
+                return { ok: false, message: data.message || res.statusText };
+            }
+            return { ok: true, ...data };
+        } catch (err) {
+            return { ok: false, message: err?.message || 'Error de conexión con Odoo.' };
+        }
+    }
+
+    async function odooGet(path) {
+        return odooFetch(path, { method: 'GET' });
+    }
+
+    async function odooPost(path, body) {
+        return odooFetch(path, { method: 'POST', body: JSON.stringify(body) });
+    }
+
+    // --- Fiscal backend (stamp / send / cancel) ---
+
     async function callConfiguredBackend(action, payload) {
+        const state = FIAX.state.ensureState();
+        if (isOdooMode(state)) {
+            return odooPost(`/fiax/api/${action}`, payload);
+        }
         const endpoint = FIAX.config?.fiscal_backend_url;
         if (!endpoint) {
             return {
@@ -39,7 +84,6 @@
                 message: 'No hay backend fiscal configurado para ejecutar esta accion.'
             };
         }
-
         try {
             const response = await fetch(`${endpoint.replace(/\/$/, '')}/${action}`, {
                 method: 'POST',
@@ -53,58 +97,76 @@
         }
     }
 
+    // --- Collection → Odoo endpoint map ---
+
+    const ODOO_ENDPOINTS = {
+        invoices:  '/fiax/api/facturas',
+        issuers:   '/fiax/api/emisores',
+        clients:   '/fiax/api/clientes',
+        products:  '/fiax/api/productos',
+    };
+
     FIAX.api = {
-        /**
-         * Generic list fetcher
-         */
+
         async getList(collection, filter = '', sort = '-created') {
             const state = FIAX.state.ensureState();
-            const normalizedCollection = normalizeCollection(collection);
-            
-            // DEMO MODE
+            const col = normalizeCollection(collection);
+
             if (state.demoMode) {
-                console.log(`[Fiax API] Fetching from Demo Data: ${normalizedCollection}`);
-                return demoList(state, normalizedCollection);
+                console.log(`[Fiax API] Demo: ${col}`);
+                return demoList(state, col);
             }
 
-            // LIVE MODE (PocketBase)
+            if (isOdooMode(state)) {
+                const endpoint = ODOO_ENDPOINTS[col];
+                if (!endpoint) return [];
+                const result = await odooGet(endpoint);
+                return result.ok ? (result.records || []) : [];
+            }
+
+            // PocketBase
             if (!FIAX.pb) return [];
             try {
-                return await FIAX.pb.collection(normalizedCollection).getFullList({
-                    filter: filter,
-                    sort: sort
-                });
+                return await FIAX.pb.collection(col).getFullList({ filter, sort });
             } catch (err) {
-                console.error(`[Fiax API] DB Error (${normalizedCollection}):`, err);
+                console.error(`[Fiax API] DB Error (${col}):`, err);
                 return [];
             }
         },
 
-        // Helper methods for specific core collections
         async getInvoices() { return this.getList('invoices'); },
-        async getIssuers() { return this.getList('issuers'); },
-        async getClients() { return this.getList('clients'); },
+        async getIssuers()  { return this.getList('issuers'); },
+        async getClients()  { return this.getList('clients'); },
         async getProducts() { return this.getList('products'); },
 
         async saveRecord(collection, data) {
             const state = FIAX.state.ensureState();
-            const normalizedCollection = normalizeCollection(collection);
-            const record = ensureId(data, normalizedCollection.slice(0, 3));
+            const col = normalizeCollection(collection);
+            const record = ensureId(data, col.slice(0, 3));
 
             if (state.demoMode) {
-                const finalRecord = normalizedCollection === 'clients' ? { ...record, type: 'Client' } : record;
-                state.upsertLocal?.(normalizedCollection, finalRecord);
+                const finalRecord = col === 'clients' ? { ...record, type: 'Client' } : record;
+                state.upsertLocal?.(col, finalRecord);
                 return { ok: true, record: finalRecord, localOnly: true };
             }
 
+            if (isOdooMode(state)) {
+                const endpoint = ODOO_ENDPOINTS[col];
+                if (!endpoint) return { ok: false, message: `No endpoint for ${col}.` };
+                const result = await odooPost(endpoint, record);
+                if (result.ok && result.record) state.upsertLocal?.(col, result.record);
+                return result;
+            }
+
+            // PocketBase
             if (!FIAX.pb) return { ok: false, message: 'PocketBase no esta disponible.' };
             try {
-                const collectionRef = FIAX.pb.collection(normalizedCollection);
+                const collectionRef = FIAX.pb.collection(col);
                 const exists = record.id && await collectionRef.getOne(record.id).then(() => true).catch(() => false);
                 const saved = exists ? await collectionRef.update(record.id, record) : await collectionRef.create(record);
                 return { ok: true, record: saved };
             } catch (err) {
-                return { ok: false, message: err?.message || `No se pudo guardar ${normalizedCollection}.` };
+                return { ok: false, message: err?.message || `No se pudo guardar ${col}.` };
             }
         },
 
@@ -115,10 +177,7 @@
         async saveInvoice(invoice) {
             const state = FIAX.state.ensureState();
             const normalized = FIAX.cfdiModel?.normalizeInvoice(invoice, state) || invoice;
-            const record = {
-                ...normalized,
-                status: normalized.status || 'Borrador'
-            };
+            const record = { ...normalized, status: normalized.status || 'Borrador' };
             const result = await this.saveRecord('invoices', record);
             if (result.ok) state.upsertLocal?.('invoices', result.record);
             return result;
@@ -146,9 +205,18 @@
             return callConfiguredBackend('cancel', { invoice: normalized, motive });
         },
 
-        /**
-         * Sets the current invoice data programmatically.
-         */
+        async getTimbres() {
+            const state = FIAX.state.ensureState();
+            if (isOdooMode(state)) {
+                return odooGet('/fiax/api/timbres');
+            }
+            return { ok: false, message: 'Solo disponible en modo Odoo.' };
+        },
+
+        async getSession() {
+            return odooGet('/fiax/api/session');
+        },
+
         setInvoiceData(data) {
             const state = FIAX.state.ensureState();
             if (!state) return false;
@@ -156,9 +224,6 @@
             return true;
         },
 
-        /**
-         * Triggers a rule-based validation on a document.
-         */
         validateDocument(docType, data) {
             console.log(`[Fiax API] Validating ${docType}...`);
             if (docType === 'cfdi' || docType === 'invoice') {

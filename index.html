@@ -260,6 +260,7 @@
       const routes = [
         { path: '/', alias: ['/index.html', '/dashboard'], component: lm('/features/Dashboard.vue') },
         { path: '/login', component: lm('/features/Login.vue') },
+        { path: '/register', component: lm('/features/Register.vue') },
 
         // Comprobantes fiscales
         { path: '/cfdi/ingresos', component: lm('/features/InvoicesList.vue'), props: { type: 'I' } },
@@ -332,7 +333,7 @@
         const state = FIAX.state.ensureState();
         
         // If in Production Mode and not logged in, redirect to /login
-        if (!state.demoMode && to.path !== '/login' && !FIAX.auth.isAuthenticated()) {
+        if (!state.demoMode && to.path !== '/login' && to.path !== '/register' && !FIAX.auth.isAuthenticated()) {
             console.warn('[Fiax Security] Guard Redirect -> /login');
             next('/login');
         } else if (to.path === '/login' && (state.demoMode || FIAX.auth.isAuthenticated())) {

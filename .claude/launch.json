@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fiax",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "serve.ts"],
+      "port": 8888
+    }
+  ]
+}

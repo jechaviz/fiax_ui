@@ -7,6 +7,7 @@
         pocketbase_url: null,
         fiscal_backend_url: null,
         allow_admin_wipe: false,
+        odoo_mode: true,
         navigation: [
             // ── Overview ────────────────────────────────────────
             { id: 'sec-overview', type: 'section', label: 'Overview' },

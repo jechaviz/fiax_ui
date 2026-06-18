@@ -57,13 +57,20 @@
         </button>
 
         <!-- Mode Indicator / Back to Demo -->
-        <div class="pt-6 border-t border-white/5 flex items-center justify-center gap-4">
-           <button 
+        <div class="pt-6 border-t border-white/5 flex items-center justify-between gap-4">
+           <button
              type="button"
              @click="toggleDemo"
              class="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors flex items-center gap-2"
            >
-             <i class="fa-solid fa-flask"></i> Regresar al Modo Demo
+             <i class="fa-solid fa-flask"></i> Modo Demo
+           </button>
+           <button
+             type="button"
+             @click="goRegister"
+             class="text-[10px] font-black uppercase tracking-widest text-primary/70 hover:text-primary transition-colors flex items-center gap-2"
+           >
+             <i class="fa-solid fa-user-plus"></i> Crear cuenta
            </button>
         </div>
       </form>
@@ -109,11 +116,11 @@ export default {
         }
     };
 
-    const toggleDemo = () => {
-        props.state.toggleDemoMode();
-    };
+    const router = VueRouter.useRouter();
+    const toggleDemo = () => { props.state.toggleDemoMode(); };
+    const goRegister = () => router.push('/register');
 
-    return { email, password, loading, error, handleLogin, toggleDemo };
+    return { email, password, loading, error, handleLogin, toggleDemo, goRegister };
   }
 }
 </script>

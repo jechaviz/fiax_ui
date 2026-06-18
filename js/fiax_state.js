@@ -21,8 +21,11 @@
             const I18N = FIAX.i18n?.es || {};
             const PB = FIAX.pb;
 
-            // Load saved demo mode or default to true
-            const savedDemoMode = localStorage.getItem('fiax_demo_mode') !== 'false';
+            // In odoo_mode default to live; in standalone default to demo
+            const _odooMode = FIAX.config?.odoo_mode;
+            const savedDemoMode = _odooMode
+                ? localStorage.getItem('fiax_demo_mode') === 'true'
+                : localStorage.getItem('fiax_demo_mode') !== 'false';
             // Load saved demo data or default from file
             let demoData = DATA;
             try {
