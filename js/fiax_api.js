@@ -39,20 +39,38 @@
         return !state.demoMode && (window.__FIAX_ODOO_MODE__ || FIAX.config?.odoo_mode);
     }
 
+    async function _fetchWithToken(path, options, token) {
+        return fetch(path, {
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                ...(options.headers || {}),
+            },
+            ...options,
+        });
+    }
+
     async function odooFetch(path, options = {}) {
         const token = localStorage.getItem('fiax_token');
         try {
-            const res = await fetch(path, {
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                    ...(options.headers || {}),
-                },
-                ...options,
-            });
+            let res = await _fetchWithToken(path, options, token);
+            // On 401 (expired token), attempt silent refresh and retry once
+            if (res.status === 401) {
+                const refreshed = await FIAX.auth?.silentRefresh?.();
+                if (refreshed) {
+                    const newToken = localStorage.getItem('fiax_token');
+                    res = await _fetchWithToken(path, options, newToken);
+                }
+            }
             const data = await res.json().catch(() => ({}));
             if (!res.ok || data.ok === false) {
+                // After refresh attempt still 401 → redirect to login
+                if (res.status === 401) {
+                    localStorage.removeItem('fiax_token');
+                    window.location.hash = '/login';
+                    return { ok: false, message: 'Sesión expirada. Redirigiendo al login...' };
+                }
                 return { ok: false, message: data.message || res.statusText };
             }
             return { ok: true, ...data };
