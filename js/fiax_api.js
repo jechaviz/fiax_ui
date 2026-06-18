@@ -152,6 +152,21 @@
             return null;
         },
 
+        async downloadPdf(id, filename) {
+            const token = localStorage.getItem('fiax_token');
+            const res = await fetch(`/fiax/api/facturas/${id}/pdf`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error('PDF no disponible desde Odoo.');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || `CFDI_${id}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        },
+
         async downloadXml(id, filename) {
             const token = localStorage.getItem('fiax_token');
             const res = await fetch(`/fiax/api/facturas/${id}/xml`, {

@@ -101,12 +101,12 @@ export default {
         }
     };
 
-    return { 
-        templateStructure, 
-        globalStyles, 
-        enrichedInvoice, 
-        exportToPdf, 
-        isExporting 
+    return {
+        templateStructure,
+        globalStyles,
+        enrichedInvoice,
+        exportToPdf,
+        isExporting
     };
   },
   components: {

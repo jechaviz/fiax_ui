@@ -34,8 +34,9 @@
           <i v-if="downloadingXml" class="fa-solid fa-circle-notch fa-spin"></i>
           <i v-else class="fa-solid fa-file-code"></i> XML
         </button>
-        <button @click="printInvoice" class="app-button-secondary py-2 px-4 flex items-center gap-2">
-          <i class="fa-solid fa-file-pdf"></i> PDF
+        <button @click="downloadPdf" :disabled="downloadingPdf" class="app-button-secondary py-2 px-4 flex items-center gap-2">
+          <i v-if="downloadingPdf" class="fa-solid fa-circle-notch fa-spin"></i>
+          <i v-else class="fa-solid fa-file-pdf"></i> PDF
         </button>
         <button @click="handleClone" class="app-button-ghost py-2 px-4 flex items-center gap-2 border border-white/5">
           <i class="fa-regular fa-copy"></i> Clonar
@@ -78,7 +79,7 @@
       <div class="absolute -inset-1 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-[2rem] blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
       
       <!-- Actual Content -->
-      <InvoicePreview :invoice="invoice" class="relative" />
+      <InvoicePreview ref="previewRef" :invoice="invoice" class="relative" />
     </div>
 
   </div>
@@ -102,6 +103,8 @@ export default {
     const loading = Vue.ref(true);
     const invoice = Vue.ref(null);
     const downloadingXml = Vue.ref(false);
+    const downloadingPdf = Vue.ref(false);
+    const previewRef = Vue.ref(null);
 
     function findInvoice(list) {
       return (list || []).find(inv => String(inv.id) === String(route.params.id)) || null;
@@ -166,6 +169,20 @@ export default {
       }
     }
 
+    async function downloadPdf() {
+      if (!invoice.value || downloadingPdf.value) return;
+      downloadingPdf.value = true;
+      try {
+        const filename = `CFDI_${invoice.value.serie}${invoice.value.folio}_${invoice.value.uuid || invoice.value.id}.pdf`;
+        await window.fiax.api.downloadPdf(invoice.value.id, filename);
+      } catch (_) {
+        // Odoo PDF not available — fall back to html2canvas export
+        await previewRef.value?.exportToPdf?.();
+      } finally {
+        downloadingPdf.value = false;
+      }
+    }
+
     function printInvoice() {
       window.print();
     }
@@ -218,12 +235,15 @@ export default {
     return {
       loading,
       invoice,
+      previewRef,
       statusColor,
       basePath,
       documentLabel,
       editPath,
       downloadXml,
       downloadingXml,
+      downloadPdf,
+      downloadingPdf,
       printInvoice,
       handleClone,
       handleSend,
