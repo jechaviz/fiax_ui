@@ -173,10 +173,14 @@ export default {
       if (!invoice.value || downloadingPdf.value) return;
       downloadingPdf.value = true;
       try {
+        // 1. JRXML custom template (configured in secrets.yaml → opens print dialog)
+        const usedJrxml = await window.fiax.api.printJrxmlPdf(invoice.value.id);
+        if (usedJrxml) return;
+        // 2. Odoo native PDF
         const filename = `CFDI_${invoice.value.serie}${invoice.value.folio}_${invoice.value.uuid || invoice.value.id}.pdf`;
         await window.fiax.api.downloadPdf(invoice.value.id, filename);
       } catch (_) {
-        // Odoo PDF not available — fall back to html2canvas export
+        // 3. html2canvas fallback from the preview component
         await previewRef.value?.exportToPdf?.();
       } finally {
         downloadingPdf.value = false;

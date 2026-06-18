@@ -170,6 +170,23 @@
             return null;
         },
 
+        async printJrxmlPdf(id) {
+            // Try JRXML template first; returns 404 if none is configured.
+            const token = localStorage.getItem('fiax_token');
+            const res = await fetch(`/fiax/api/facturas/${id}/jrxml-html`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            });
+            if (res.status === 404) return false;  // no template configured
+            if (!res.ok) throw new Error('Error al renderizar plantilla JRXML.');
+            const html = await res.text();
+            const win = window.open('', '_blank');
+            if (!win) throw new Error('El navegador bloqueó la ventana emergente.');
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+            return true;
+        },
+
         async downloadPdf(id, filename) {
             const token = localStorage.getItem('fiax_token');
             const res = await fetch(`/fiax/api/facturas/${id}/pdf`, {
