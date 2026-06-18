@@ -10,9 +10,8 @@
         <div class="space-y-1 text-sm text-slate-500 dark:text-slate-400">
           <p><span class="font-semibold text-slate-700 dark:text-slate-300">RFC:</span> {{ issuer.rfc }}</p>
           <p v-if="issuer.telefono"><span class="font-semibold text-slate-700 dark:text-slate-300">TEL:</span> {{ issuer.telefono }}</p>
-          <p class="leading-relaxed">
-            {{ rules.resolvePattern(config.text_pattern || '{address}')
-                .replace('{address}', `${issuer.calle || ''} ${issuer.noExterior || ''}, ${issuer.colonia || ''}, ${issuer.municipio || ''}, CP ${issuer.codigoPostal || ''}`) }}
+          <p v-if="issuerAddress" class="leading-relaxed">
+            {{ rules.resolvePattern(config.text_pattern || '{address}').replace('{address}', issuerAddress) }}
           </p>
         </div>
       </div>
@@ -41,7 +40,11 @@ export default {
   setup(props) {
     const rules = window.fiax?.rules;
     const issuer = props.invoice.issuer || {};
-    return { rules, issuer };
+    const i = issuer;
+    const street = [i.calle, i.noExterior].filter(Boolean).join(' ');
+    const parts = [street, i.colonia, i.municipio, i.codigoPostal ? `CP ${i.codigoPostal}` : ''].filter(Boolean);
+    const issuerAddress = parts.join(', ');
+    return { rules, issuer, issuerAddress };
   }
 }
 </script>

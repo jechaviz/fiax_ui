@@ -8,21 +8,21 @@
        </p>
     </div>
 
-    <!-- Digital Seals (CFDI Logic) -->
-    <div class="space-y-6">
+    <!-- Digital Seals — only shown when real stamp data is present -->
+    <div v-if="selloCFDI || selloEmisor" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-loose">
-        <div class="space-y-2">
+        <div v-if="selloCFDI" class="space-y-2">
           <p class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700 pb-1">Sello Digital del CFDI</p>
-          <p class="break-all opacity-80 pt-1 leading-relaxed">{{ invoice.selloCFDI || invoice.satSeal || 'SAT-STAMP-PLACEHOLDER' }}</p>
+          <p class="break-all opacity-80 pt-1 leading-relaxed">{{ selloCFDI }}</p>
         </div>
-        <div class="space-y-2">
+        <div v-if="selloEmisor" class="space-y-2">
           <p class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700 pb-1">Sello del Emisor</p>
-          <p class="break-all opacity-80 pt-1 leading-relaxed">{{ invoice.selloSAT || invoice.issuerSeal || 'ISSUER-STAMP-PLACEHOLDER' }}</p>
+          <p class="break-all opacity-80 pt-1 leading-relaxed">{{ selloEmisor }}</p>
         </div>
-        
-        <div class="col-span-1 md:col-span-2 space-y-2 mt-4">
+
+        <div v-if="cadenaOriginal" class="col-span-1 md:col-span-2 space-y-2 mt-4">
           <p class="font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700 pb-1">Cadena Original de Certificación del SAT</p>
-          <p class="break-all opacity-80 pt-1 leading-relaxed">||1.1|{{ invoice.uuid }}|{{ invoice.fechaTimbrado }}|...|00001000000504204441||</p>
+          <p class="break-all opacity-80 pt-1 leading-relaxed">{{ cadenaOriginal }}</p>
         </div>
       </div>
     </div>
@@ -34,15 +34,19 @@ export default {
   props: ['invoice', 'config'],
   setup(props) {
     const rules = window.fiax?.rules;
-    
-    // Resolve dynamic mentions from rule engine enriched context
+    const inv = props.invoice || {};
+
     const menciones = rules?.resolve('context_menciones', []).value
       || rules?.resolve('context_mentions', []).value
       || rules?.resolve('context_mennciones', []).value
       || [];
     const mencion = menciones && menciones.length ? menciones[0] : null;
 
-    return { rules, mencion };
+    const selloCFDI  = inv.selloCFDI  || inv.satSeal    || null;
+    const selloEmisor = inv.selloSAT  || inv.issuerSeal  || null;
+    const cadenaOriginal = inv.cadenaOriginal || null;
+
+    return { rules, mencion, selloCFDI, selloEmisor, cadenaOriginal };
   }
 }
 </script>
