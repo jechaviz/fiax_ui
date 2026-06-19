@@ -16,6 +16,7 @@
         :show-downloads="true"
         @row-action="handleRowAction"
         @new-record="createNew"
+        @prefetch-row="row => window.fiax?.api?.prefetchInvoiceDetail?.(row.id)"
       />
     </div>
   </div>

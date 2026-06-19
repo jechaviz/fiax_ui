@@ -33,6 +33,11 @@
         return state.demoData[collection];
     }
 
+    // --- Detail prefetch cache ---
+    const _detailCache = new Map(); // id → { data, ts }
+    const _CACHE_TTL = 60_000;
+    const _inflight = new Map();    // id → Promise (dedup concurrent fetches)
+
     // --- Odoo mode helpers ---
 
     function isOdooMode(state) {
@@ -153,7 +158,16 @@
             }
         },
 
-        async getInvoices() { return this.getList('invoices'); },
+        async getInvoices() {
+            const records = await this.getList('invoices');
+            // prefetch top 5 most recent in background after a short delay
+            if (records.length) {
+                setTimeout(() => {
+                    records.slice(0, 5).forEach(r => this.prefetchInvoiceDetail(r.id));
+                }, 800);
+            }
+            return records;
+        },
         async getIssuers()  { return this.getList('issuers'); },
         async getClients()  { return this.getList('clients'); },
         async getProducts() { return this.getList('products'); },
@@ -164,10 +178,30 @@
                 return (state.data.invoices || []).find(i => String(i.id) === String(id)) || null;
             }
             if (isOdooMode(state)) {
-                const res = await odooGet(`/fiax/api/facturas/${id}`);
-                return res.ok ? res.record : null;
+                const key = String(id);
+                const hit = _detailCache.get(key);
+                if (hit && Date.now() - hit.ts < _CACHE_TTL) return hit.data;
+                // dedup: reuse in-flight promise if already fetching
+                if (_inflight.has(key)) return _inflight.get(key);
+                const promise = odooGet(`/fiax/api/facturas/${id}`)
+                    .then(res => {
+                        if (res.ok) _detailCache.set(key, { data: res.record, ts: Date.now() });
+                        _inflight.delete(key);
+                        return res.ok ? res.record : null;
+                    })
+                    .catch(() => { _inflight.delete(key); return null; });
+                _inflight.set(key, promise);
+                return promise;
             }
             return null;
+        },
+
+        prefetchInvoiceDetail(id) {
+            const key = String(id);
+            if (_detailCache.has(key) || _inflight.has(key)) return;
+            const state = FIAX.state.ensureState();
+            if (!isOdooMode(state)) return;
+            this.getInvoiceDetail(id); // fire-and-forget
         },
 
         async printJrxmlPdf(id) {

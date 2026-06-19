@@ -98,7 +98,7 @@
             </thead>
 
             <tbody>
-              <tr v-for="row in pagedRows" :key="row.id" @contextmenu.prevent="openContextMenu($event, row)">
+              <tr v-for="row in pagedRows" :key="row.id" @contextmenu.prevent="openContextMenu($event, row)" @mouseenter="$emit('prefetch-row', row)">
                 <td
                   v-for="column in visibleColumns"
                   :key="`${row.id}:${column.key}`"

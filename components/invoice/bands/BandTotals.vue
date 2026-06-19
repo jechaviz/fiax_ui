@@ -31,7 +31,7 @@
           <div v-if="invoice.taxes?.groups?.length">
              <div v-for="tax in invoice.taxes.groups" :key="tax.name" class="flex justify-between text-sm">
                 <span class="text-slate-500 dark:text-slate-400">
-                  {{ tax.name }} {{ (tax.rate * 100).toFixed(0) }}% {{ tax.isRetention ? '(RET)' : '(TRA)' }}
+                  {{ tax.name }}{{ tax.name?.includes('%') ? '' : ` ${(tax.rate * 100).toFixed(0)}%` }} {{ tax.isRetention ? '(RET)' : '(TRA)' }}
                 </span>
                 <span :class="tax.isRetention ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'" class="font-semibold">
                    {{ tax.isRetention ? '-' : '' }}{{ formatCurrency(tax.amount) }}
