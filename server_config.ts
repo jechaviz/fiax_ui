@@ -1,4 +1,4 @@
-export const DEFAULT_PORT = 8888;
+export const DEFAULT_PORT = 8080;
 
 export function resolveServerPort(value: string | undefined, fallback = DEFAULT_PORT) {
   if (!value) {
