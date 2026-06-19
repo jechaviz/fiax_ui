@@ -5,7 +5,7 @@ import { resolveStaticPath, shouldServeSpaFallback } from "./serve_paths";
 import { resolveServerPort } from "./server_config";
 
 const PORT = resolveServerPort(Bun.env.PORT);
-const PROXY_PORT = parseInt(Bun.env.FIAX_PROXY_PORT || "8889");
+const PROXY_PORT = parseInt(Bun.env.FIAX_PROXY_PORT || "9400");
 const ROOT = resolve(import.meta.dir);
 
 console.log(`Starting Fiax Bun server in ${ROOT}...`);
