@@ -1,6 +1,11 @@
 <template>
   <div class="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl mb-8">
-    <table class="w-full text-left table-fixed">
+    <!-- Detail loading overlay -->
+    <div v-if="loadingDetail" class="flex items-center justify-center gap-2 py-6 text-slate-400 text-sm">
+      <span class="w-4 h-4 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></span>
+      Cargando conceptos...
+    </div>
+    <table v-else class="w-full text-left table-fixed">
       <thead>
         <tr class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
           <th class="p-4 text-xs font-bold uppercase tracking-wider text-slate-500 w-[50%]">Descripción del Concepto</th>
@@ -98,7 +103,7 @@
 
 <script>
 export default {
-  props: ['invoice', 'config'],
+  props: ['invoice', 'config', 'loadingDetail'],
   setup(props) {
     const rules = window.fiax?.rules;
     

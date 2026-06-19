@@ -16,10 +16,11 @@
     <!-- The Assembler Container -->
     <div class="bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-10 max-w-5xl mx-auto font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300" id="invoice-capture-area" :style="globalStyles">
       <template v-for="(band, bIdx) in templateStructure" :key="bIdx">
-         <component 
-           :is="band.component" 
-           :invoice="enrichedInvoice" 
-           :config="band.config || {}" 
+         <component
+           :is="band.component"
+           :invoice="enrichedInvoice"
+           :config="band.config || {}"
+           :loading-detail="loadingDetail"
          />
       </template>
 
@@ -35,7 +36,8 @@
 export default {
   name: 'InvoicePreview',
   props: {
-    invoice: { type: Object, required: true }
+    invoice: { type: Object, required: true },
+    loadingDetail: { type: Boolean, default: false }
   },
   setup(props) {
     const rules = window.fiax?.rules;

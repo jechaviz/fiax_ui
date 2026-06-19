@@ -79,7 +79,7 @@
       <div class="absolute -inset-1 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-[2rem] blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
       
       <!-- Actual Content -->
-      <InvoicePreview ref="previewRef" :invoice="invoice" class="relative" />
+      <InvoicePreview ref="previewRef" :invoice="invoice" :loading-detail="loadingDetail" class="relative" />
     </div>
 
   </div>
@@ -101,6 +101,7 @@ export default {
     const route = VueRouter.useRoute();
     const router = VueRouter.useRouter();
     const loading = Vue.ref(true);
+    const loadingDetail = Vue.ref(false);
     const invoice = Vue.ref(null);
     const downloadingXml = Vue.ref(false);
     const downloadingPdf = Vue.ref(false);
@@ -122,13 +123,14 @@ export default {
 
     Vue.onMounted(async () => {
       // Always fetch full detail from proxy (has issuer, receiver, lineItems)
+      loadingDetail.value = true;
       try {
         const full = await window.fiax?.api?.getInvoiceDetail?.(route.params.id);
-        if (full) { invoice.value = full; loading.value = false; return; }
-      } catch (e) { /* ignore */ }
-      // Fallback: use state list entry if detail fetch failed
-      if (invoice.value) { loading.value = false; return; }
-      loading.value = false;
+        if (full) { invoice.value = full; loading.value = false; }
+      } catch (e) { /* ignore */ } finally {
+        loadingDetail.value = false;
+        loading.value = false;
+      }
     });
 
     const statusColor = Vue.computed(() => {
@@ -238,6 +240,7 @@ export default {
 
     return {
       loading,
+      loadingDetail,
       invoice,
       previewRef,
       statusColor,

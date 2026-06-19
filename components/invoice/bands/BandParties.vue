@@ -21,11 +21,13 @@
           <div class="grid grid-cols-2 gap-4 text-right">
             <div>
               <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Método de Pago</p>
-              <p class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentMethod }}</p>
+              <span v-if="loadingDetail" class="inline-block w-3 h-3 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></span>
+              <p v-else class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentMethod }}</p>
             </div>
             <div>
               <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Forma de Pago</p>
-              <p class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentForm || invoice.formaDePago || invoice.paymentType }}</p>
+              <span v-if="loadingDetail" class="inline-block w-3 h-3 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></span>
+              <p v-else class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentForm || invoice.formaDePago || invoice.paymentType }}</p>
             </div>
           </div>
           <div v-if="invoice.condicionesDePago" class="pt-2 border-t border-slate-200 dark:border-slate-700">
@@ -40,7 +42,7 @@
 
 <script>
 export default {
-  props: ['invoice', 'config'],
+  props: ['invoice', 'config', 'loadingDetail'],
   setup(props) {
     const rules = window.fiax?.rules;
     const issuer = props.invoice.issuer || {};
