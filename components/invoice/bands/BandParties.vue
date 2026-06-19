@@ -25,7 +25,7 @@
             </div>
             <div>
               <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Forma de Pago</p>
-              <p class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentType }}</p>
+              <p class="text-slate-800 dark:text-slate-200 text-sm font-semibold">{{ invoice.paymentForm || invoice.formaDePago || invoice.paymentType }}</p>
             </div>
           </div>
           <div v-if="invoice.condicionesDePago" class="pt-2 border-t border-slate-200 dark:border-slate-700">
