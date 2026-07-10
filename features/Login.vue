@@ -45,7 +45,21 @@
           </div>
         </div>
 
-        <button 
+        <!-- Company selector when user has multiple RFCs -->
+        <div v-if="companies.length > 1" class="space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 px-1">Empresa / RFC</label>
+          <div class="relative group">
+            <i class="fa-solid fa-building absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors"></i>
+            <select v-model="selectedCompanyId"
+              class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all appearance-none">
+              <option v-for="c in companies" :key="c.id" :value="c.id" class="bg-slate-900">
+                {{ c.name }} {{ c.rfc ? '(' + c.rfc + ')' : '' }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <button
           type="submit"
           :disabled="loading"
           class="relative w-full py-4 bg-primary text-white font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
@@ -98,18 +112,27 @@ export default {
     const password = Vue.ref('');
     const loading = Vue.ref(false);
     const error = Vue.ref(null);
+    const companies = Vue.ref([]);        // populated after credential check if multi-RFC
+    const selectedCompanyId = Vue.ref(null);
 
     const handleLogin = async () => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await window.fiax.auth.login(email.value, password.value);
+            const res = await window.fiax.auth.login(
+                email.value, password.value, selectedCompanyId.value
+            );
             if (res.success) {
-                // State is updated globally, we just route to dashboard
+                // If multiple companies and none selected yet, show selector
+                if (res.companies && res.companies.length > 1 && !selectedCompanyId.value) {
+                    companies.value = res.companies;
+                    selectedCompanyId.value = res.companies[0].id;
+                    // Already logged in with first company — let user switch if needed
+                }
                 window.location.hash = '/dashboard';
-                window.location.reload(); // Refresh to hydrate PB data
+                window.location.reload();
             } else {
-                error.value = "Credenciales inválidas. Verifica tu acceso.";
+                error.value = res.message || 'Credenciales inválidas. Verifica tu acceso.';
             }
         } finally {
             loading.value = false;
@@ -120,7 +143,7 @@ export default {
     const toggleDemo = () => { props.state.toggleDemoMode(); };
     const goRegister = () => router.push('/register');
 
-    return { email, password, loading, error, handleLogin, toggleDemo, goRegister };
+    return { email, password, loading, error, companies, selectedCompanyId, handleLogin, toggleDemo, goRegister };
   }
 }
 </script>

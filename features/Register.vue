@@ -166,7 +166,7 @@ export default {
       loading.value = true;
       error.value = null;
       try {
-        const res = await fetch('/fiax/api/auth/register', {
+        const res = await fetch('/fiax/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
